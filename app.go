@@ -22,6 +22,13 @@ func (a *App) startup(ctx context.Context) {
 }
 
 // Greet returns a greeting for the given name
-func (a *App) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, It's show time!", name)
+
+func (a *App) CreateMatrix(size int) [][]int {
+
+	matrix := make([][]int, size)
+	for i := range matrix {
+		matrix[i] = make([]int, size)
+	}
+	fmt.Printf("Matriz creada: %dx%d\n", size, size)
+	return matrix
 }

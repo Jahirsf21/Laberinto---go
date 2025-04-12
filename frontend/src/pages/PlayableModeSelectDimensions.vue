@@ -1,5 +1,7 @@
 <script setup>
 import { useRouter } from 'vue-router'
+import { CreateMatrix } from '../../wailsjs/go/main/App' // Importación correcta
+import { ref } from 'vue'
 
 const router = useRouter()
 
@@ -7,13 +9,23 @@ const goSelectMode = () => {
   router.push({ name: 'SelectGameMode' })
 }
 
-
 const dimensions = [5, 10, 15, 20, 25]
+const isLoading = ref(false)
+const errorMessage = ref('')
 
-
-const selectDimension = (size) => {
-  console.log(`Iniciando juego jugable ${size}x${size}`)
-
+const selectDimension = async (size) => {
+  try {
+    isLoading.value = true
+    errorMessage.value = ''
+    console.log(`Creando matriz ${size}x${size}...`)
+    const matrix = await CreateMatrix(size)
+    console.log('Matriz creada:', matrix)
+  } catch (error) {
+    console.error('Error al crear matriz:', error)
+    errorMessage.value = `Error al crear matriz: ${error.message}`
+  } finally {
+    isLoading.value = false
+  }
 }
 </script>
 
