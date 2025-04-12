@@ -1,7 +1,10 @@
 <script setup>
+import { RouterView } from 'vue-router';
+
 </script>
 
 <template>
-    <h1>ola mundo</h1>
+  <RouterView></RouterView>
 </template>
+
 
