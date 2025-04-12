@@ -11,9 +11,9 @@ const startPlaying = () => {
 
 <template>
   <div class="principal-page">
-    <h1>Welcome player</h1>
+    <h1>Bienvenido al laberinto</h1>
     <button @click="startPlaying" class="start-button">
-      Start Playing
+      Empezar a jugar
     </button>
   </div>
 </template>

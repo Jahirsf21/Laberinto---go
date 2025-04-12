@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import PrincipalPage from '../pages/PrincipalPage.vue'
 import SelectGameMode from '../pages/SelectGameMode.vue'
+import AutoSolveDimensions from '../pages/AutoSolveDimensions.vue'
+import PlayableModeSelectDimensions from '../pages/PlayableModeSelectDimensions.vue'
 
 const routes = [
   {
@@ -12,6 +14,16 @@ const routes = [
     path: '/SelectGameMode',
     name: 'SelectGameMode',
     component: SelectGameMode
+  },
+  {
+    path: '/SelectGameMode/AutoSolveDimensions',
+    name: 'AutoSolveDimensions',
+    component: AutoSolveDimensions
+  },
+  {
+    path: '/SelectGameMode/PlayableDimensions',
+    name: 'PlayableDimensions',
+    component: PlayableModeSelectDimensions
   }
 ]
 

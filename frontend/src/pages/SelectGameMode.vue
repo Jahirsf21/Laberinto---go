@@ -1,24 +1,35 @@
 <script setup>
 import { useRouter } from 'vue-router'
+import AutoSolveDimensions from './AutoSolveDimensions.vue'
 
 const router = useRouter()
 
 const goHome = () => {
   router.push({ name: 'Home' }) 
 }
+
+const goAutoSolve = () => {
+    router.push({name: 'AutoSolveDimensions'})
+}
+
+const goPlayable = () => {
+    router.push({name: 'PlayableDimensions'})
+}
 </script>
 
 <template>
   <div class="game-mode-container">
-    <h1>Select Game Mode</h1>
-    
-   
+    <h1>Selecciona el modo de juego</h1>
     <div class="game-modes">
-      <button class="mode-button"></button>
-      <button class="mode-button"></button>
+        <button @click="goAutoSolve" class="mode-button">
+        Auto solucionado
+      </button>
+      <button @click="goPlayable" class="mode-button">
+        Modo jugable
+      </button>
     </div>
     <button @click="goHome" class="back-button">
-      ← Back to Home
+      ← Volver a la página principal
     </button>
   </div>
 </template>
