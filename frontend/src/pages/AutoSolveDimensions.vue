@@ -62,7 +62,7 @@ const selectDimension = async (size) => {
 }
 
 h1 {
-  color: #2c3e50;
+  color: #ffffff;
   margin-bottom: 0.5rem;
 }
 

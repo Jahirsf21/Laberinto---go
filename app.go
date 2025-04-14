@@ -52,9 +52,12 @@ func (a *App) MazeExist() bool {
 	if err != nil {
 		return false
 	}
-	var maze Maze
-	if err := json.Unmarshal(fileContent, &maze); err != nil {
+	var data struct {
+		Mazes []Maze `json:"Mazes"`
+	}
+
+	if err := json.Unmarshal(fileContent, &data); err != nil {
 		return false
 	}
-	return len(maze.Matriz) > 0
+	return len(data.Mazes) > 0
 }

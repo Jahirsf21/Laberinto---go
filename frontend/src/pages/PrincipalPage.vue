@@ -12,18 +12,19 @@ const startNewGame = () => {
 
 const loadGame = async () => {
   try {
-    const existSavedGames = await MazeExist()
+    const existSavedGames = await MazeExist();
     if (existSavedGames) {
-      router.push('SelectGamesSaved')
+      router.push('SelectGamesSaved');
     } else {
-      noSavedGamesMessage.value = 'No hay partidas guardadas'
-      setTimeout(() => noSavedGamesMessage.value = '', 3000) // Limpiar mensaje después de 3 segundos
+        noSavedGamesMessage.value = 'No hay partidas guardadas';
+        setTimeout(() => noSavedGamesMessage.value = '', 3000);
     }
   } catch (error) {
-    noSavedGamesMessage.value = 'Error al cargar partidas guardadas'
-    setTimeout(() => noSavedGamesMessage.value = '', 3000)
+    noSavedGamesMessage.value = 'Error al verificar partidas: ' + error.message;
+    setTimeout(() => noSavedGamesMessage.value = '', 3000);
   }
 }
+
 </script>
 
 <template>
