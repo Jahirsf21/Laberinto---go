@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"os"
+	"time"
 )
 
 // App struct
@@ -44,6 +46,34 @@ func (a *App) CreateMatrix(size int) [][]int {
 		matrix[i] = make([]int, size)
 	}
 	fmt.Printf("Matriz creada: %dx%d\n", size, size)
+	SetStartAndEnd(matrix)
+	return matrix
+}
+
+func SetStartAndEnd(matrix [][]int) [][]int {
+	rand.Seed(time.Now().UnixNano())
+
+	size := len(matrix)
+
+	// Coordenadas para salida (3)
+	x1 := rand.Intn(size)
+	y1 := rand.Intn(size)
+	matrix[x1][y1] = 3
+
+	// Coordenadas distintas para llegada (2)
+	var x2, y2 int
+	for {
+		x2 = rand.Intn(size)
+		y2 = rand.Intn(size)
+		if x2 != x1 || y2 != y1 {
+			break
+		}
+	}
+	matrix[x2][y2] = 2
+
+	fmt.Printf("Punto de salida (3): [%d][%d]\n", x1, y1)
+	fmt.Printf("Punto de llegada (2): [%d][%d]\n", x2, y2)
+
 	return matrix
 }
 
