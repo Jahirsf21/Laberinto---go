@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import { CreateMatrix } from '../../wailsjs/go/main/App' // Importación correcta
+import { CreateMatrix } from '../../wailsjs/go/main/App' 
 import { ref } from 'vue'
 
 const router = useRouter()
@@ -22,9 +22,6 @@ const selectDimension = async (size) => {
     const matrix = await CreateMatrix(size)
     
     console.log('Matriz creada:', matrix)
-    // Aquí puedes hacer algo con la matriz devuelta
-    // Por ejemplo, guardarla en un store o navegar a otra vista
-    
   } catch (error) {
     console.error('Error al crear matriz:', error)
     errorMessage.value = `Error al crear matriz: ${error.message}`

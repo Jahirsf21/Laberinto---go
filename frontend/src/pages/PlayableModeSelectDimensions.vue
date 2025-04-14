@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import { CreateMatrix } from '../../wailsjs/go/main/App' // Importación correcta
+import { CreateMatrix } from '../../wailsjs/go/main/App' 
 import { ref } from 'vue'
 
 const router = useRouter()

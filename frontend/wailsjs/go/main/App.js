@@ -5,3 +5,7 @@
 export function CreateMatrix(arg1) {
   return window['go']['main']['App']['CreateMatrix'](arg1);
 }
+
+export function MazeExist() {
+  return window['go']['main']['App']['MazeExist']();
+}
