@@ -1,34 +1,3 @@
-<script setup>
-import { useRouter } from 'vue-router'
-import { CreateMatrix } from '../../wailsjs/go/main/App' 
-import { ref } from 'vue'
-
-const router = useRouter()
-
-const goSelectMode = () => {
-  router.push({ name: 'SelectGameMode' })
-}
-
-const dimensions = [5, 10, 15, 20, 25]
-const isLoading = ref(false)
-const errorMessage = ref('')
-
-const selectDimension = async (size) => {
-  try {
-    isLoading.value = true
-    errorMessage.value = ''
-    console.log(`Creando matriz ${size}x${size}...`)
-    const matrix = await CreateMatrix(size)
-    console.log('Matriz creada:', matrix)
-  } catch (error) {
-    console.error('Error al crear matriz:', error)
-    errorMessage.value = `Error al crear matriz: ${error.message}`
-  } finally {
-    isLoading.value = false
-  }
-}
-</script>
-
 <template>
   <div class="playable-container">
     <h1>Modo Jugable</h1>
@@ -50,6 +19,30 @@ const selectDimension = async (size) => {
     </button>
   </div>
 </template>
+
+<script setup>
+import { useRouter } from 'vue-router'
+import { CreateMaze } from '../../wailsjs/go/main/App'
+
+const router = useRouter()
+
+const dimensions = [5, 10, 15, 20, 25]
+
+const goSelectMode = () => {
+  router.push({ name: 'SelectGameMode' })
+}
+
+const selectDimension = async (size) => {
+  const mode = false; 
+  const createdMaze = await CreateMaze(size, mode);
+  sessionStorage.setItem('gameData', JSON.stringify({
+    maze: createdMaze,
+    mode: mode
+  }))
+  
+  router.push({ name: 'Game' });
+}
+</script>
 
 <style scoped>
 .playable-container {
@@ -88,7 +81,7 @@ h1 {
 }
 
 .playable-btn {
-  background-color: #3498db; /* Azul para diferenciar del modo auto-solve */
+  background-color: #3498db; 
 }
 
 .dimension-button:hover {
@@ -97,7 +90,7 @@ h1 {
 }
 
 .playable-btn:hover {
-  background-color: #2980b9; /* Azul más oscuro al hacer hover */
+  background-color: #2980b9;
 }
 
 .back-button {
