@@ -10,8 +10,24 @@ export function DeleteStartPoint(arg1) {
   return window['go']['main']['App']['DeleteStartPoint'](arg1);
 }
 
+export function GetEndPoint(arg1) {
+  return window['go']['main']['App']['GetEndPoint'](arg1);
+}
+
+export function GetMazes() {
+  return window['go']['main']['App']['GetMazes']();
+}
+
+export function GetStartPoint(arg1) {
+  return window['go']['main']['App']['GetStartPoint'](arg1);
+}
+
 export function MazeExist() {
   return window['go']['main']['App']['MazeExist']();
+}
+
+export function SaveMaze(arg1, arg2, arg3) {
+  return window['go']['main']['App']['SaveMaze'](arg1, arg2, arg3);
 }
 
 export function SetSPoint(arg1, arg2, arg3) {

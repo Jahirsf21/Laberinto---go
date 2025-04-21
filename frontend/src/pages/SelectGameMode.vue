@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import AutoSolveDimensions from './AutoSolveDimensions.vue'
+
 
 const router = useRouter()
 

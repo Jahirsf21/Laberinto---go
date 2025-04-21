@@ -1,25 +1,3 @@
-<template>
-  <div class="playable-container">
-    <h1>Modo Jugable</h1>
-    <p class="subtitle">Elige el tamaño del tablero</p>
-    
-    <div class="dimensions-grid">
-      <button
-        v-for="size in dimensions"
-        :key="size"
-        @click="selectDimension(size)"
-        class="dimension-button playable-btn"
-      >
-        {{ size }}x{{ size }}
-      </button>
-    </div>
-    
-    <button @click="goSelectMode" class="back-button">
-      ← Volver a selección de modos
-    </button>
-  </div>
-</template>
-
 <script setup>
 import { useRouter } from 'vue-router'
 import { CreateMaze } from '../../wailsjs/go/main/App'
@@ -43,6 +21,29 @@ const selectDimension = async (size) => {
   router.push({ name: 'Game' });
 }
 </script>
+
+<template>
+  <div class="playable-container">
+    <h1>Modo Jugable</h1>
+    <p class="subtitle">Elige el tamaño del tablero</p>
+    
+    <div class="dimensions-grid">
+      <button
+        v-for="size in dimensions"
+        :key="size"
+        @click="selectDimension(size)"
+        class="dimension-button playable-btn"
+      >
+        {{ size }}x{{ size }}
+      </button>
+    </div>
+    
+    <button @click="goSelectMode" class="back-button">
+      ← Volver a selección de modos
+    </button>
+  </div>
+</template>
+
 
 <style scoped>
 .playable-container {

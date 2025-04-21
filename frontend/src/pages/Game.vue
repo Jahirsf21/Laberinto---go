@@ -1,15 +1,16 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { ref, watch } from 'vue'
-import { SetSPoint, DeleteStartPoint } from '../../wailsjs/go/main/App'
+import { SetSPoint, DeleteStartPoint, SaveMaze } from '../../wailsjs/go/main/App'
 
 const router = useRouter()
 const savedData = JSON.parse(sessionStorage.getItem('gameData') || 'null')
 
 const maze = ref(savedData?.maze || [])
 const mode = ref(savedData?.mode || false)
+const IsSaved = ref(savedData?.IsSaved || false)
 const selectingStartPoint = ref(false)
-const hasStartPoint = ref(false)
+const hasStartPoint = ref(maze.value.some(row => row.includes(1)))
 const errorMessage = ref('')
 const showingSolution = ref(false)
 const saveMessage = ref('') 
@@ -18,22 +19,12 @@ const showSolution = () => {
   showingSolution.value = !showingSolution.value
 }
 
-watch(maze, () => {
-  hasStartPoint.value = maze.value.some(row => row.includes(1))
-})
+watch(maze, (newMaze) => {
+  hasStartPoint.value = newMaze.some(row => row.some(cell => cell === 1))
+}, { immediate: true }) 
 
 const goHome = () => {
   router.push({ name: 'Home' })
-}
-
-const getCellClass = (row, col) => {
-  switch (maze.value[row][col]) {
-    case 3: return 'cell wall'
-    case 0: return 'cell path'
-    case 1: return 'cell start'
-    case 2: return 'cell end'
-    default: return 'cell path'
-  }
 }
 
 const enableStartPointSelection = () => {
@@ -58,10 +49,25 @@ const deleteStartPoint = async () => {
   maze.value = updatedMaze 
 }
 
+const saveMaze = async () => {
+  const mazeName = prompt("Ingrese el nombre para el laberinto:");
+  if (!mazeName) {
+    saveMessage.value = 'Debe ingresar un nombre para el laberinto';
+    setTimeout(() => saveMessage.value = '', 3000);
+    return;
+  }
 
-const saveMaze = () => {
-  saveMessage.value = 'Laberinto guardado correctamente'
-  setTimeout(() => saveMessage.value = '', 3000) 
+  try {
+    await SaveMaze(maze.value, mazeName,mode.value);
+    saveMessage.value = 'Laberinto guardado correctamente';
+    IsSaved.value = true;
+    setTimeout(() => saveMessage.value = '', 3000);
+  } catch (error) {
+    saveMessage.value = 'Error al guardar el laberinto';
+    setTimeout(() => saveMessage.value = '', 3000);
+    console.error(error);
+  }
+
 }
 </script>
 
@@ -106,14 +112,13 @@ const saveMaze = () => {
         {{ showingSolution ? 'Ocultar Solución' : 'Ver Solución' }}
       </button>
 
-      <button @click="saveMaze" class="save-button">
+      <button v-if="!IsSaved" @click="saveMaze" class="save-button">
         Guardar Laberinto
       </button>
 
       <button @click="goHome" class="back-button">
         Volver al Menú
       </button>
-
     </div>
     
     <div v-if="errorMessage" class="message">
