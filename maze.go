@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"math/rand"
 	"os"
+	"time"
 )
 
 const (
@@ -15,26 +16,68 @@ const (
 
 func (a *App) CreateMaze(size int, mode bool) [][]int {
 	maze := make([][]int, size)
+	// Inicializar todo como vacío (Empty)
 	for i := range maze {
 		maze[i] = make([]int, size)
-	}
-	var startX, startY, endX, endY int
-	if mode {
-		endX, endY = rand.Intn(size), rand.Intn(size)
-		maze[endX][endY] = End
-	} else {
-		startX, startY = rand.Intn(size), rand.Intn(size)
-		endX, endY = rand.Intn(size), rand.Intn(size)
-
-		for startX == endX && startY == endY {
-			endX, endY = rand.Intn(size), rand.Intn(size)
+		for j := range maze[i] {
+			maze[i][j] = Empty
 		}
+	}
 
-		maze[startX][startY] = Start
-		maze[endX][endY] = End
+	// Establecer los bordes como paredes (Wall)
+	for i := 0; i < size; i++ {
+		maze[0][i] = Wall      // primera fila
+		maze[size-1][i] = Wall // última fila
+		maze[i][0] = Wall      // primera columna
+		maze[i][size-1] = Wall // última columna
+	}
+
+	rand.Seed(time.Now().UnixNano())
+
+	// Comenzar desde una posición aleatoria dentro del laberinto (evitando los bordes)
+	startX := 1 + rand.Intn(size-2)
+	startY := 1 + rand.Intn(size-2)
+	maze[startX][startY] = Wall
+
+	// Llamar a la función para tallar el laberinto
+	a.carveMaze(maze, startX, startY)
+
+	for {
+		endX := 1 + rand.Intn(size-2)
+		endY := 1 + rand.Intn(size-2)
+		if maze[endX][endY] == Empty {
+			maze[endX][endY] = End
+			break
+		}
 	}
 
 	return maze
+}
+
+func (a *App) carveMaze(maze [][]int, x, y int) {
+	type pos struct{ dx, dy int }
+	dirs := []pos{{0, 2}, {2, 0}, {0, -2}, {-2, 0}}
+	rand.Shuffle(len(dirs), func(i, j int) { dirs[i], dirs[j] = dirs[j], dirs[i] })
+
+	inBounds := func(x, y int) bool {
+		return x >= 0 && y >= 0 && x < len(maze) && y < len(maze[0])
+	}
+
+	for _, d := range dirs {
+		nx, ny := x+d.dx, y+d.dy
+		if !inBounds(nx, ny) || maze[nx][ny] != Empty {
+			continue
+		}
+
+		if rand.Float64() < 0.1 {
+			maze[nx][ny] = Wall
+			midX, midY := x+d.dx/2, y+d.dy/2
+			maze[midX][midY] = Wall
+		}
+
+		a.carveMaze(maze, nx, ny)
+
+	}
 }
 
 func (a *App) MazeExist() bool {
