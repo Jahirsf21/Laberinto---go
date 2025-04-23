@@ -16,7 +16,7 @@ const (
 
 func (a *App) CreateMaze(size int, mode bool) [][]int {
 	maze := make([][]int, size)
-	// Inicializar todo como vacío (Empty)
+	
 	for i := range maze {
 		maze[i] = make([]int, size)
 		for j := range maze[i] {
@@ -24,22 +24,22 @@ func (a *App) CreateMaze(size int, mode bool) [][]int {
 		}
 	}
 
-	// Establecer los bordes como paredes (Wall)
+	
 	for i := 0; i < size; i++ {
-		maze[0][i] = Wall      // primera fila
-		maze[size-1][i] = Wall // última fila
-		maze[i][0] = Wall      // primera columna
-		maze[i][size-1] = Wall // última columna
+		maze[0][i] = Wall
+		maze[size-1][i] = Wall 
+		maze[i][0] = Wall      
+		maze[i][size-1] = Wall 
 	}
 
 	rand.Seed(time.Now().UnixNano())
 
-	// Comenzar desde una posición aleatoria dentro del laberinto (evitando los bordes)
+	
 	startX := 1 + rand.Intn(size-2)
 	startY := 1 + rand.Intn(size-2)
 	maze[startX][startY] = Wall
 
-	// Llamar a la función para tallar el laberinto
+	
 	a.carveMaze(maze, startX, startY)
 
 	for {
