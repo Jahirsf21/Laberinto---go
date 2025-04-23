@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"math/rand"
 	"os"
+	"time"
 )
 
 const (
@@ -15,27 +16,52 @@ const (
 
 func (a *App) CreateMaze(size int, mode bool) [][]int {
 	var maze [][]int
-	for range size {
-		var newRow []int
-		for range size {
-			newRow = append(newRow, Wall)
+
+	
+
+	for i := 0; i < size; i++ {
+		row := make([]int, size)
+		for j := 0; j < size; j++ {
+			row[j] = Wall
 		}
-		maze = append(maze, newRow)
+		maze = append(maze, row)
 	}
+
+	rand.Seed(time.Now().UnixNano())
+
 	if mode {
+
 		endX, endY := rand.Intn(size), rand.Intn(size)
 		maze[endX][endY] = End
 		a.CarveMaze(maze, endX, endY)
+		
 	} else {
-		startX, startY := rand.Intn(size), rand.Intn(size)
-		endX, endY := rand.Intn(size), rand.Intn(size)
 
-		for startX == endX && startY == endY {
-			endX, endY = rand.Intn(size), rand.Intn(size)
+		startX := 1 + rand.Intn(size-2)
+		startY := 1 + rand.Intn(size-2)
+		maze[startX][startY] = Empty
+
+		a.CarveMaze(maze, startX, startY)
+
+		for {
+			startX, startY = rand.Intn(size), rand.Intn(size)
+			if maze[startX][startY] == Empty {
+				maze[startX][startY] = Start
+				break
+			}
 		}
-		maze[startX][startY] = Start
-		maze[endX][endY] = End
+
+		var endX, endY int
+		for {
+			endX, endY = rand.Intn(size), rand.Intn(size)
+			if (endX != startX || endY != startY) && maze[endX][endY] == Empty {
+				maze[endX][endY] = End
+				break
+			}
+		}
+
 		a.ConnectPoints(maze, startX, startY, endX, endY)
+
 		if startX == -1 || startY == -1 {
 			maze = a.SetSPointRand(maze)
 		}
@@ -47,12 +73,28 @@ func (a *App) CreateMaze(size int, mode bool) [][]int {
 func (a *App) CarveMaze(maze [][]int, x, y int) {
 	dirs := [][]int{{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
 	rand.Shuffle(len(dirs), func(i, j int) { dirs[i], dirs[j] = dirs[j], dirs[i] })
+
 	for _, dir := range dirs {
 		nx, ny := x+2*dir[0], y+2*dir[1]
+
 		if nx >= 0 && ny >= 0 && nx < len(maze) && ny < len(maze[0]) && maze[nx][ny] == Wall {
+
 			maze[x+dir[0]][y+dir[1]] = Empty
 			maze[nx][ny] = Empty
 			a.CarveMaze(maze, nx, ny)
+		}
+	}
+
+	for _, dir := range dirs {
+		nx, ny := x+2*dir[0], y+2*dir[1]
+		mx, my := x+dir[0], y+dir[1]
+
+		if nx >= 0 && ny >= 0 && nx < len(maze) && ny < len(maze[0]) {
+			if maze[nx][ny] == Empty && maze[mx][my] == Wall {
+				if rand.Float64() < 0.1 {
+					maze[mx][my] = Empty
+				}
+			}
 		}
 	}
 }
