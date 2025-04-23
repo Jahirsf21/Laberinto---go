@@ -18,8 +18,8 @@ export namespace main {
 	    name: string;
 	    mode: boolean;
 	    matrix: number[][];
-	    start: Coord;
 	    end: Coord;
+	    solution: Coord[];
 	
 	    static createFrom(source: any = {}) {
 	        return new Maze(source);
@@ -30,8 +30,8 @@ export namespace main {
 	        this.name = source["name"];
 	        this.mode = source["mode"];
 	        this.matrix = source["matrix"];
-	        this.start = this.convertValues(source["start"], Coord);
 	        this.end = this.convertValues(source["end"], Coord);
+	        this.solution = this.convertValues(source["solution"], Coord);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

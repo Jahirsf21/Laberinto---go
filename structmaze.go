@@ -1,11 +1,11 @@
 package main
 
 type Maze struct {
-	Name   string  `json:"name"`
-	Mode   bool    `json:"mode"`
-	Matrix [][]int `json:"matrix"`
-	Start  Coord   `json:"start"`
-	End    Coord   `json:"end"`
+	Name     string  `json:"name"`
+	Mode     bool    `json:"mode"`
+	Matrix   [][]int `json:"matrix"`
+	End      Coord   `json:"end"`
+	Solution Camino  `json:"solution"`
 }
 
 type Coord struct {

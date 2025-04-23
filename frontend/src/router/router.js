@@ -4,6 +4,7 @@ import SelectGameMode from '../pages/SelectGameMode.vue'
 import AutoSolveDimensions from '../pages/AutoSolveDimensions.vue'
 import PlayableModeSelectDimensions from '../pages/PlayableModeSelectDimensions.vue'
 import SelectGamesSaved from '../pages/SelectGamesSaved.vue'
+import SelectModeMazeSaved from '../pages/SelectModeMazeSaved.vue'
 import Game from '../pages/Game.vue'
 
 const routes = [
@@ -31,6 +32,11 @@ const routes = [
     path: '/SelectGamesSaved',
     name: 'SelectGamesSaved',
     component: SelectGamesSaved
+  },
+  {
+    path: '/SelectModeMazeSaved',
+    name: 'SelectModeMazeSaved', 
+    component: SelectModeMazeSaved
   },
   {
     path: '/game',

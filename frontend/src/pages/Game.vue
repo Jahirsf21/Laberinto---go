@@ -10,7 +10,7 @@ const maze = ref(savedData?.maze || [])
 const mode = ref(savedData?.mode || false)
 const IsSaved = ref(savedData?.IsSaved || false)
 const selectingStartPoint = ref(false)
-const hasStartPoint = ref(maze.value.some(row => row.includes(1)))
+const hasStartPoint = ref(false) // Inicializar como false
 const errorMessage = ref('')
 const showingSolution = ref(false)
 const saveMessage = ref('') 
@@ -19,9 +19,10 @@ const showSolution = () => {
   showingSolution.value = !showingSolution.value
 }
 
+// Actualizar hasStartPoint al cargar el laberinto
 watch(maze, (newMaze) => {
-  hasStartPoint.value = newMaze.some(row => row.some(cell => cell === 1))
-}, { immediate: true }) 
+  hasStartPoint.value = newMaze.some(row => row.includes(1))
+}, { immediate: true })
 
 const goHome = () => {
   router.push({ name: 'Home' })
@@ -58,7 +59,7 @@ const saveMaze = async () => {
   }
 
   try {
-    await SaveMaze(maze.value, mazeName,mode.value);
+    await SaveMaze(maze.value, mazeName, mode.value);
     saveMessage.value = 'Laberinto guardado correctamente';
     IsSaved.value = true;
     setTimeout(() => saveMessage.value = '', 3000);
@@ -67,7 +68,6 @@ const saveMaze = async () => {
     setTimeout(() => saveMessage.value = '', 3000);
     console.error(error);
   }
-
 }
 </script>
 
@@ -104,7 +104,7 @@ const saveMaze = async () => {
         Establecer punto de inicio
       </button> 
       
-      <button v-if="hasStartPoint" @click="deleteStartPoint" class="delete-button">
+      <button v-if="mode && hasStartPoint" @click="deleteStartPoint" class="delete-button">
         Borrar punto de inicio
       </button>
       

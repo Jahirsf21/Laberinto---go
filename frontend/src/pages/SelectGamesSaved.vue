@@ -19,9 +19,9 @@ const selectMaze = (maze) => {
   sessionStorage.setItem('gameData', JSON.stringify({
     maze: maze.matrix,
     mode: maze.mode,
-    IsSaved: true
+    
   }))
-  router.push({ name: 'Game' })
+  router.push({ name: 'SelectModeMazeSaved' })
 }
 
 onMounted(() => {
