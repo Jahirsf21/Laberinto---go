@@ -11,18 +11,14 @@ const startNewGame = () => {
 }
 
 const loadGame = async () => {
-  try {
-    const existSavedGames = await MazeExist();
-    if (existSavedGames) {
-      router.push('SelectGamesSaved');
-    } else {
-        noSavedGamesMessage.value = 'No hay partidas guardadas';
-        setTimeout(() => noSavedGamesMessage.value = '', 3000);
-    }
-  } catch (error) {
-    noSavedGamesMessage.value = 'Error al verificar partidas: ' + error.message;
-    setTimeout(() => noSavedGamesMessage.value = '', 3000);
+  const existSavedGames = await MazeExist();
+  if (existSavedGames) {
+    router.push('SelectGamesSaved');
+  } else {
+      noSavedGamesMessage.value = 'No hay partidas guardadas';
+      setTimeout(() => noSavedGamesMessage.value = '', 3000);
   }
+
 }
 </script>
 
