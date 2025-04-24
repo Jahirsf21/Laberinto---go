@@ -22,25 +22,31 @@ func (a *App) CreateMaze(size int, mode bool) [][]int {
 		}
 		maze = append(maze, newRow)
 	}
+
 	if mode {
 		endX, endY := rand.Intn(size), rand.Intn(size)
 		maze[endX][endY] = End
 		a.CarveMaze(maze, endX, endY)
 	} else {
 		startX, startY := rand.Intn(size), rand.Intn(size)
-		endX, endY := rand.Intn(size), rand.Intn(size)
-
-		for startX == endX && startY == endY {
-			endX, endY = rand.Intn(size), rand.Intn(size)
+		maze[startX][startY] = Empty
+		a.CarveMaze(maze, startX, startY)
+		for {
+			startX, startY = rand.Intn(size), rand.Intn(size)
+			if maze[startX][startY] == Empty {
+				maze[startX][startY] = Start
+				break
+			}
 		}
-		maze[startX][startY] = Start
-		maze[endX][endY] = End
-		a.ConnectPoints(maze, startX, startY, endX, endY)
-		if startX == -1 || startY == -1 {
-			maze = a.SetSPointRand(maze)
+		var endX, endY int
+		for {
+			endX, endY = rand.Intn(size), rand.Intn(size)
+			if (endX != startX || endY != startY) && maze[endX][endY] == Empty {
+				maze[endX][endY] = End
+				break
+			}
 		}
 	}
-
 	return maze
 }
 
@@ -55,81 +61,17 @@ func (a *App) CarveMaze(maze [][]int, x, y int) {
 			a.CarveMaze(maze, nx, ny)
 		}
 	}
-}
-
-func (a *App) ConnectPoints(maze [][]int, startX, startY, endX, endY int) {
-	a.CarveMaze(maze, endX, endY)
-	if maze[startX][startY] == Wall {
-		dirs := [][]int{{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
-		for _, dir := range dirs {
-			nx, ny := startX+dir[0], startY+dir[1]
-			if nx >= 0 && ny >= 0 && nx < len(maze) && ny < len(maze[0]) && maze[nx][ny] == Empty {
-				maze[startX][startY] = Empty
-				break
+	for _, dir := range dirs {
+		nx, ny := x+2*dir[0], y+2*dir[1]
+		mx, my := x+dir[0], y+dir[1]
+		if nx >= 0 && ny >= 0 && nx < len(maze) && ny < len(maze[0]) {
+			if maze[nx][ny] == Empty && maze[mx][my] == Wall {
+				if rand.Float64() < 0.1 {
+					maze[mx][my] = Empty
+				}
 			}
 		}
 	}
-
-	if !a.Backtracking(maze, startX, startY) {
-		a.createDirectPath(maze, startX, startY, endX, endY)
-	}
-}
-
-func (a *App) createDirectPath(maze [][]int, startX, startY, endX, endY int) {
-	x, y := startX, startY
-
-	for x != endX || y != endY {
-		if x < endX {
-			x++
-		} else if x > endX {
-			x--
-		}
-
-		if y < endY {
-			y++
-		} else if y > endY {
-			y--
-		}
-		if maze[x][y] == Wall {
-			maze[x][y] = Empty
-		}
-	}
-}
-
-func (a *App) Backtracking(maze [][]int, startX, startY int) bool {
-	var visited [][]bool
-	for range maze {
-		var fila []bool
-		for range maze[0] {
-			fila = append(fila, false)
-		}
-		visited = append(visited, fila)
-	}
-	return a.backtrackHelper(maze, startX, startY, &visited)
-}
-
-func (a *App) backtrackHelper(maze [][]int, x, y int, visited *[][]bool) bool {
-	if x < 0 || y < 0 || x >= len(maze) || y >= len(maze[0]) {
-		return false
-	}
-
-	if maze[x][y] == Wall || (*visited)[x][y] {
-		return false
-	}
-
-	if maze[x][y] == End {
-		return true
-	}
-
-	(*visited)[x][y] = true
-
-	if a.backtrackHelper(maze, x+1, y, visited) ||
-		a.backtrackHelper(maze, x-1, y, visited) ||
-		a.backtrackHelper(maze, x, y+1, visited) ||
-		a.backtrackHelper(maze, x, y-1, visited) {
-		return true
-	}
-	return false
 }
 
 func (a *App) MazeExist() bool {
@@ -138,7 +80,6 @@ func (a *App) MazeExist() bool {
 		return false
 	}
 	var data MazeData
-
 	if err := json.Unmarshal(fileContent, &data); err != nil {
 		return false
 	}
@@ -155,9 +96,7 @@ func (a *App) SaveMaze(maze [][]int, name string, mode bool) {
 			data = MazeData{Mazes: []Maze{}}
 		}
 	}
-
 	endX, endY := a.GetEndPoint(maze)
-
 	newMaze := Maze{
 		Name:   name,
 		Mode:   mode,
@@ -165,7 +104,6 @@ func (a *App) SaveMaze(maze [][]int, name string, mode bool) {
 		End:    Coord{Fila: endX, Col: endY},
 	}
 	data.Mazes = append(data.Mazes, newMaze)
-
 	updatedContent, err := json.Marshal(data)
 	if err != nil {
 		return
@@ -179,7 +117,6 @@ func (a *App) GetMazes() MazeData {
 		return MazeData{Mazes: []Maze{}}
 	}
 	var data MazeData
-
 	if err := json.Unmarshal(fileContent, &data); err != nil {
 		return MazeData{Mazes: []Maze{}}
 	}
@@ -241,4 +178,62 @@ func (a *App) DeleteStartPoint(maze [][]int) [][]int {
 		}
 	}
 	return maze
+}
+
+func (a *App) GetAllPaths(maze [][]int, startX, startY int) []Camino {
+	var paths []Camino
+	var currentPath Camino
+	var visited [][]bool
+	for range maze {
+		var fila []bool
+		for range maze[0] {
+			fila = append(fila, false)
+		}
+		visited = append(visited, fila)
+	}
+	a.FindPaths(maze, startX, startY, &visited, &currentPath, &paths, 5)
+	return paths
+}
+
+func (a *App) GetBestPath(maze [][]int, startX, startY int) Camino {
+	allPaths := a.GetAllPaths(maze, startX, startY)
+	if len(allPaths) == 0 {
+		return Camino{}
+	}
+	bestPath := allPaths[0]
+	minLength := len(bestPath)
+	for _, path := range allPaths {
+		if len(path) < minLength {
+			bestPath = path
+			minLength = len(path)
+		}
+	}
+	return bestPath
+}
+
+func (a *App) FindPaths(maze [][]int, x, y int, visited *[][]bool, currentPath *Camino, paths *[]Camino, maxPaths int) {
+	pathCount := len(*paths)
+	if pathCount >= maxPaths {
+		return
+	}
+	if x < 0 || y < 0 || x >= len(maze) || y >= len(maze[0]) || maze[x][y] == Wall || (*visited)[x][y] {
+		return
+	}
+	*currentPath = append(*currentPath, Coord{Fila: x, Col: y})
+	if maze[x][y] == End {
+		var pathCopy Camino
+		for _, coord := range *currentPath {
+			pathCopy = append(pathCopy, Coord{Fila: coord.Fila, Col: coord.Col})
+		}
+		*paths = append(*paths, pathCopy)
+		*currentPath = (*currentPath)[:len(*currentPath)-1]
+		return
+	}
+	(*visited)[x][y] = true
+	a.FindPaths(maze, x+1, y, visited, currentPath, paths, maxPaths)
+	a.FindPaths(maze, x-1, y, visited, currentPath, paths, maxPaths)
+	a.FindPaths(maze, x, y+1, visited, currentPath, paths, maxPaths)
+	a.FindPaths(maze, x, y-1, visited, currentPath, paths, maxPaths)
+	(*visited)[x][y] = false
+	*currentPath = (*currentPath)[:len(*currentPath)-1]
 }

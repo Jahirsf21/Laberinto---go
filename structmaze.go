@@ -5,7 +5,8 @@ type Maze struct {
 	Mode     bool    `json:"mode"`
 	Matrix   [][]int `json:"matrix"`
 	End      Coord   `json:"end"`
-	Solution Camino  `json:"solution"`
+	AllPaths Camino  `json:"allPaths"`
+	BestPath Camino  `json:"bestPath"`
 }
 
 type Coord struct {

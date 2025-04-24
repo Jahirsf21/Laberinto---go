@@ -1,25 +1,78 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { ref, watch } from 'vue'
-import { SetSPoint, DeleteStartPoint, SaveMaze } from '../../wailsjs/go/main/App'
+import { SetSPoint, DeleteStartPoint, SaveMaze, GetAllPaths, GetBestPath } from '../../wailsjs/go/main/App'
 
 const router = useRouter()
 const savedData = JSON.parse(sessionStorage.getItem('gameData') || 'null')
 
 const maze = ref(savedData?.maze || [])
 const mode = ref(savedData?.mode || false)
+const allPaths = ref([])
+const bestPath = ref([])
+const currentPathIndex = ref(0)
+
+//States of the game
 const IsSaved = ref(savedData?.IsSaved || false)
+const hasStartPoint = ref(false) 
+
+//States for buttons
 const selectingStartPoint = ref(false)
-const hasStartPoint = ref(false) // Inicializar como false
-const errorMessage = ref('')
 const showingSolution = ref(false)
+
+//Messages
+const errorMessage = ref('')
 const saveMessage = ref('') 
 
-const showSolution = () => {
+const showSolution = async() => {
+  if (selectingStartPoint.value == true) {
+    selectingStartPoint.value = false
+  }
+  if (hasStartPoint.value == false) {
+    errorMessage.value = 'No puedes ver la solución sin un punto de inicio'
+    setTimeout(() => errorMessage.value = '', 3000) 
+    return
+  }
+  if (!allPaths.value.length) {
+    const startX = maze.value.findIndex(row => row.includes(1))
+    const startY = maze.value[startX]?.indexOf(1) 
+    allPaths.value = await GetAllPaths(maze.value, startX, startY)
+    bestPath.value = await GetBestPath(maze.value, startX, startY)
+  }
+  
   showingSolution.value = !showingSolution.value
 }
 
-// Actualizar hasStartPoint al cargar el laberinto
+const showNextPath = () => {
+  if (currentPathIndex.value < allPaths.value.length - 1) {
+    currentPathIndex.value++
+  }
+}
+
+const showPrevPath = () => {
+  if (currentPathIndex.value > 0) {
+    currentPathIndex.value--
+  }
+}
+
+const showBestPath = () => {
+  currentPathIndex.value = allPaths.value.findIndex(path => 
+    JSON.stringify(path) === JSON.stringify(bestPath.value)
+  )
+}
+
+const isPathCell = (row, col) => {
+  if (!allPaths.value.length || currentPathIndex.value >= allPaths.value.length) return false
+  const currentPath = allPaths.value[currentPathIndex.value]
+  return currentPath.some(coord => coord.fila === row && coord.col === col)
+}
+
+const isBestPathCell = (row, col) => {
+  if (!bestPath.value.length) return false
+  return bestPath.value.some(coord => coord.fila === row && coord.col === col)
+}
+
+
 watch(maze, (newMaze) => {
   hasStartPoint.value = newMaze.some(row => row.includes(1))
 }, { immediate: true })
@@ -42,15 +95,22 @@ const selectCell = async (row, col) => {
   }
   const updatedMaze = await SetSPoint(maze.value, row, col)
   maze.value = updatedMaze 
+  allPaths.value = []
   selectingStartPoint.value = false
 }
 
 const deleteStartPoint = async () => {
   const updatedMaze = await DeleteStartPoint(maze.value)
+  if (showingSolution.value) {
+    showingSolution.value = false
+  }
   maze.value = updatedMaze 
 }
 
 const saveMaze = async () => {
+  if (selectingStartPoint.value == true) {
+    selectingStartPoint.value = false
+  }
   const mazeName = prompt("Ingrese el nombre para el laberinto:");
   if (!mazeName) {
     saveMessage.value = 'Debe ingresar un nombre para el laberinto';
@@ -89,7 +149,9 @@ const saveMaze = async () => {
             'wall': cell === 3,
             'path': cell === 0,
             'start': cell === 1,
-            'end': cell === 2
+            'end': cell === 2,
+            'solution-path': showingSolution && isPathCell(rowIndex, colIndex),
+            'best-path': showingSolution && isBestPathCell(rowIndex, colIndex)
           }"
           @click="selectCell(rowIndex, colIndex)" 
         >
@@ -97,6 +159,21 @@ const saveMaze = async () => {
           <span v-else-if="cell === 2">F</span>
         </div>
       </div>
+    </div>
+    
+    <div v-if="showingSolution && allPaths.length" class="path-navigation">
+      <button @click="showPrevPath" :disabled="currentPathIndex === 0" class="nav-button">
+        ← Anterior
+      </button>
+      <span class="path-counter">
+        Camino {{ currentPathIndex + 1 }} de {{ allPaths.length }}
+      </span>
+      <button @click="showNextPath" :disabled="currentPathIndex === allPaths.length - 1" class="nav-button">
+        Siguiente →
+      </button>
+      <button @click="showBestPath" class="best-path-button">
+        Mostrar Mejor Camino
+      </button>
     </div>
     
     <div class="controls">
@@ -121,11 +198,11 @@ const saveMaze = async () => {
       </button>
     </div>
     
-    <div v-if="errorMessage" class="message">
+    <div v-if="errorMessage" class="message error-message">
       {{ errorMessage }}
     </div>
 
-    <div v-if="saveMessage" class="save-message">
+    <div v-if="saveMessage" class="message save-message">
       {{ saveMessage }}
     </div>
   </div>
@@ -163,6 +240,7 @@ h1 {
   justify-content: center;
   font-weight: bold;
   border: 1px solid #eee;
+  position: relative;
 }
 
 .wall {
@@ -183,12 +261,70 @@ h1 {
   color: white;
 }
 
+.solution-path {
+  background-color: rgba(52, 152, 219, 0.5);
+}
+
+.best-path {
+  background-color: rgba(46, 204, 113, 0.7);
+}
+
 .controls {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
   gap: 1rem;
   margin: 1.5rem 0;
+}
+
+.path-navigation {
+  margin: 1.5rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem;
+  background-color: #2c3e50;
+  border-radius: 8px;
+}
+
+.path-counter {
+  font-weight: bold;
+  min-width: 150px;
+}
+
+.nav-button {
+  padding: 0.6rem 1rem;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.nav-button:hover:not(:disabled) {
+  background-color: #3498db;
+}
+
+.nav-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.best-path-button {
+  padding: 0.6rem 1rem;
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.best-path-button:hover {
+  background-color: #27ae60;
 }
 
 button {
@@ -249,35 +385,45 @@ button {
   margin-top: 1rem;
   padding: 0.8rem;
   border-radius: 6px;
-  background-color: #42b883;
-  color: white;
   display: inline-block;
+}
+
+.error-message {
+  background-color: #e74c3c;
+  color: white;
 }
 
 .save-message {
-  margin-top: 1rem;
-  padding: 0.8rem;
-  border-radius: 6px;
   background-color: #f1c40f;
   color: white;
-  display: inline-block;
 }
 
 @media (max-width: 768px) {
-  .controls {
+  .controls, .path-navigation {
     flex-direction: column;
     align-items: center;
   }
   
-  button {
+  button, .nav-button, .best-path-button {
     width: 100%;
     max-width: 250px;
+    margin-bottom: 0.5rem;
   }
   
   .maze-cell {
     width: 25px;
     height: 25px;
     font-size: 0.8rem;
+  }
+  
+  .path-navigation {
+    gap: 0.5rem;
+  }
+  
+  .path-counter {
+    order: -1;
+    width: 100%;
+    margin-bottom: 0.5rem;
   }
 }
 </style>
