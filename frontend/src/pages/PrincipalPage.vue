@@ -34,7 +34,7 @@ const loadGame = async () => {
       <button @click="loadGame" class="load-game">Cargar partida</button>
     </div>
     
-    <div v-if="noSavedGamesMessage" class="message">
+    <div class="message">
       {{ noSavedGamesMessage }}
     </div>
   </div>
