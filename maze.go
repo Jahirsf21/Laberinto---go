@@ -16,9 +16,9 @@ const (
 func (a *App) CreateMaze(size int, mode bool) [][]int {
 	var maze [][]int
 
-	for i := 0; i < size; i++ {
+	for range size {
 		row := make([]int, size)
-		for j := 0; j < size; j++ {
+		for j := range size {
 			row[j] = Wall
 		}
 		maze = append(maze, row)
