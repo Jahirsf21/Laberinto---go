@@ -133,7 +133,7 @@ const saveMaze = async () => {
 
 <template>
   <div class="game-container">
-    <h1>Laberinto</h1>
+    <h1>Maze</h1>
     
     <div class="maze-grid">
       <div 

@@ -24,12 +24,11 @@ const loadGame = async () => {
     setTimeout(() => noSavedGamesMessage.value = '', 3000);
   }
 }
-
 </script>
 
 <template>
   <div class="principal-page">
-    <h1>Bienvenido al laberinto</h1>
+    <h1>Bienvenido a Maze</h1>
     <div class="buttons-container">
       <button @click="startNewGame" class="new-game">Nueva partida</button>
       <button @click="loadGame" class="load-game">Cargar partida</button>
@@ -56,36 +55,25 @@ const loadGame = async () => {
   margin-bottom: 20px;
 }
 
-.new-game {
-  padding: 12px 24px;
-  background-color: #42b883;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  width: 200px;
-}
-
-.new-game:hover {
-  background-color: #058938;
-}
-
+.new-game,
 .load-game {
-  padding: 12px 24px;
+  padding: 1.5rem;
   background-color: #42b883;
   color: white;
   border: none;
-  border-radius: 6px;
-  font-size: 1rem;
+  border-radius: 8px;
+  font-size: 1.2rem;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.3s ease;
   width: 200px;
+  text-align: center;
 }
 
+.new-game:hover,
 .load-game:hover {
-  background-color: #058938;
+  background-color: #3aa876;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .message {
