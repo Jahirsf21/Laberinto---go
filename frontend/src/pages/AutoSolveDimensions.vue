@@ -1,25 +1,3 @@
-<template>
-  <div class="auto-solve-container">
-    <h1>Modo Auto Solución</h1>
-    <p class="subtitle">Selecciona el tamaño del tablero</p>
-    
-    <div class="dimensions-grid">
-      <button
-        v-for="size in dimensions"
-        :key="size"
-        @click="selectDimension(size)"
-        class="dimension-button"
-      >
-        {{ size }}x{{ size }}
-      </button>
-    </div>
-    
-    <button @click="goSelectMode" class="back-button">
-      ← Volver a selección de modos
-    </button>
-  </div>
-</template>
-
 <script setup>
 import { useRouter } from 'vue-router'
 import { CreateMaze } from '../../wailsjs/go/main/App'
@@ -42,9 +20,29 @@ const selectDimension = async (size) => {
   
   router.push({ name: 'Game' });
 }
-
 </script>
 
+<template>
+  <div class="auto-solve-container">
+    <h1>Modo Auto Solución</h1>
+    <p class="subtitle">Selecciona el tamaño del tablero</p>
+    
+    <div class="dimensions-grid">
+      <button
+        v-for="size in dimensions"
+        :key="size"
+        @click="selectDimension(size)"
+        class="dimension-button"
+      >
+        {{ size }}x{{ size }}
+      </button>
+    </div>
+    
+    <button @click="goSelectMode" class="back-button">
+      ← Volver a selección de modos
+    </button>
+  </div>
+</template>
 
 <style scoped>
 .auto-solve-container {
