@@ -271,6 +271,53 @@ func (a *App) GetBestPath(maze [][]int, row, col int) Camino {
 	return Camino{}
 }
 
+func (a *App) GetWorstPath(maze [][]int, row, col int) Camino {
+	var worstPath Camino
+	visited := a.CreateBooleanMatrix(len(maze))
+	var currentPath Camino
+	a.GetWorstPathAux(maze, row, col, visited, &currentPath, &worstPath)
+	return worstPath
+}
+
+func (a *App) GetWorstPathAux(maze [][]int, row, col int, visited [][]bool, currentPath *Camino, worstPath *Camino) {
+	if row < 0 || col < 0 || row >= len(maze) || col >= len(maze[0]) || visited[row][col] || maze[row][col] == Wall {
+		return
+	}
+	*currentPath = append(*currentPath, Coord{Fila: row, Col: col})
+	visited[row][col] = true
+
+	if maze[row][col] == End {
+		if len(*currentPath) > len(*worstPath) {
+			*worstPath = (*worstPath)[:0]
+			*worstPath = append(*worstPath, *currentPath...)
+		}
+	} else {
+		dirs := [][]int{{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
+		for _, dir := range dirs {
+			newRow, newCol := row+dir[0], col+dir[1]
+			a.GetWorstPathAux(maze, newRow, newCol, visited, currentPath, worstPath)
+		}
+	}
+	*currentPath = (*currentPath)[:len(*currentPath)-1]
+	visited[row][col] = false
+}
+
+func (a *App) GetAveragePath(maze [][]int, row, col int) Camino {
+	paths := a.GetPaths(maze, row, col)
+	if len(paths) == 0 {
+		return Camino{}
+	}
+	for i := 1; i < len(paths); i++ {
+		j := i
+		for j > 0 && len(paths[j-1]) > len(paths[j]) {
+			paths[j-1], paths[j] = paths[j], paths[j-1]
+			j--
+		}
+	}
+	result := len(paths) / 2
+	return paths[result]
+}
+
 func (a *App) CreateBooleanMatrix(size int) [][]bool {
 	var matrix [][]bool
 	for range size {
