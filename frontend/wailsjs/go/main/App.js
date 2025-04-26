@@ -6,20 +6,20 @@ export function CarveMaze(arg1, arg2, arg3) {
   return window['go']['main']['App']['CarveMaze'](arg1, arg2, arg3);
 }
 
+export function CreateBooleanMatrix(arg1) {
+  return window['go']['main']['App']['CreateBooleanMatrix'](arg1);
+}
+
+export function CreateMatrix(arg1) {
+  return window['go']['main']['App']['CreateMatrix'](arg1);
+}
+
 export function CreateMaze(arg1, arg2) {
   return window['go']['main']['App']['CreateMaze'](arg1, arg2);
 }
 
 export function DeleteStartPoint(arg1) {
   return window['go']['main']['App']['DeleteStartPoint'](arg1);
-}
-
-export function FindPaths(arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
-  return window['go']['main']['App']['FindPaths'](arg1, arg2, arg3, arg4, arg5, arg6, arg7);
-}
-
-export function GetAllPaths(arg1, arg2, arg3) {
-  return window['go']['main']['App']['GetAllPaths'](arg1, arg2, arg3);
 }
 
 export function GetBestPath(arg1, arg2, arg3) {
@@ -34,6 +34,14 @@ export function GetMazes() {
   return window['go']['main']['App']['GetMazes']();
 }
 
+export function GetPaths(arg1, arg2, arg3) {
+  return window['go']['main']['App']['GetPaths'](arg1, arg2, arg3);
+}
+
+export function GetPathsAux(arg1, arg2, arg3, arg4, arg5, arg6) {
+  return window['go']['main']['App']['GetPathsAux'](arg1, arg2, arg3, arg4, arg5, arg6);
+}
+
 export function GetStartPoint(arg1) {
   return window['go']['main']['App']['GetStartPoint'](arg1);
 }
@@ -46,10 +54,14 @@ export function SaveMaze(arg1, arg2, arg3) {
   return window['go']['main']['App']['SaveMaze'](arg1, arg2, arg3);
 }
 
-export function SetSPoint(arg1, arg2, arg3) {
-  return window['go']['main']['App']['SetSPoint'](arg1, arg2, arg3);
+export function SetStartEndPoint(arg1, arg2, arg3) {
+  return window['go']['main']['App']['SetStartEndPoint'](arg1, arg2, arg3);
 }
 
-export function SetSPointRand(arg1) {
-  return window['go']['main']['App']['SetSPointRand'](arg1);
+export function SetStartPoint(arg1, arg2, arg3) {
+  return window['go']['main']['App']['SetStartPoint'](arg1, arg2, arg3);
+}
+
+export function SetStartPointRandom(arg1) {
+  return window['go']['main']['App']['SetStartPointRandom'](arg1);
 }

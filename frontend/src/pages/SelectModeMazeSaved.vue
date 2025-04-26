@@ -1,7 +1,7 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
-import { DeleteStartPoint, SetSPointRand } from '../../wailsjs/go/main/App'
+import { DeleteStartPoint, SetStartPointRandom } from '../../wailsjs/go/main/App'
 
 const router = useRouter()
 const savedData = JSON.parse(sessionStorage.getItem('gameData') || 'null')
@@ -26,7 +26,7 @@ const selectAutoSolve = async () => {
 const selectPlayable = async () => {
   let updatedMaze = maze.value
   if (mode.value === true) {
-    updatedMaze = await SetSPointRand(maze.value) 
+    updatedMaze = await SetStartPointRandom(maze.value) 
   }
   sessionStorage.setItem('gameData', JSON.stringify({
     maze: updatedMaze,
@@ -40,6 +40,17 @@ const selectPlayable = async () => {
 <template>
   <div class="mode-selection-container">
     <h1>Selecciona el modo en el que quieres jugar</h1>
+    <div class="maze-grid">
+      <div v-for="(row, rowIndex) in maze" :key="rowIndex" class="maze-row">
+        <div v-for="(cell, colIndex) in row" :key="colIndex" class="maze-cell"
+          :class="{
+            'wall': cell === 3,
+            'end': cell === 2,
+          }">
+            <span v-if="cell === 2">F</span>
+        </div>
+      </div>
+    </div>
     <div class="buttons-container">
       <button @click="selectAutoSolve" class="mode-button">Auto solución</button>
       <button @click="selectPlayable" class="mode-button">Jugable</button>
@@ -52,6 +63,37 @@ const selectPlayable = async () => {
 .mode-selection-container {
   text-align: center;
   padding: 2rem;
+}
+
+.maze-grid {
+  display: inline-block;
+  margin: 1rem auto;
+  border: 2px solid #2c3e50;
+  background: white;
+}
+
+.maze-row {
+  display: flex;
+}
+
+.maze-cell {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  border: 1px solid #eee;
+  position: relative;
+}
+
+.wall {
+  background-color: #2c3e50;
+}
+
+.end {
+  background-color: #ff6b6b;
+  color: white;
 }
 
 .buttons-container {

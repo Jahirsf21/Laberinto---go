@@ -4,13 +4,13 @@ import {main} from '../models';
 
 export function CarveMaze(arg1:Array<any>,arg2:number,arg3:number):Promise<void>;
 
+export function CreateBooleanMatrix(arg1:number):Promise<Array<any>>;
+
+export function CreateMatrix(arg1:number):Promise<Array<any>>;
+
 export function CreateMaze(arg1:number,arg2:boolean):Promise<Array<any>>;
 
 export function DeleteStartPoint(arg1:Array<any>):Promise<Array<any>>;
-
-export function FindPaths(arg1:Array<any>,arg2:number,arg3:number,arg4:any,arg5:main.Camino,arg6:any,arg7:number):Promise<void>;
-
-export function GetAllPaths(arg1:Array<any>,arg2:number,arg3:number):Promise<Array<main.Camino>>;
 
 export function GetBestPath(arg1:Array<any>,arg2:number,arg3:number):Promise<main.Camino>;
 
@@ -18,12 +18,18 @@ export function GetEndPoint(arg1:Array<any>):Promise<number|number>;
 
 export function GetMazes():Promise<main.MazeData>;
 
+export function GetPaths(arg1:Array<any>,arg2:number,arg3:number):Promise<Array<main.Camino>>;
+
+export function GetPathsAux(arg1:Array<any>,arg2:number,arg3:number,arg4:any,arg5:main.Camino,arg6:any):Promise<void>;
+
 export function GetStartPoint(arg1:Array<any>):Promise<number|number>;
 
 export function MazeExist():Promise<boolean>;
 
 export function SaveMaze(arg1:Array<any>,arg2:string,arg3:boolean):Promise<void>;
 
-export function SetSPoint(arg1:Array<any>,arg2:number,arg3:number):Promise<Array<any>>;
+export function SetStartEndPoint(arg1:Array<any>,arg2:number,arg3:boolean):Promise<void>;
 
-export function SetSPointRand(arg1:Array<any>):Promise<Array<any>>;
+export function SetStartPoint(arg1:Array<any>,arg2:number,arg3:number):Promise<Array<any>>;
+
+export function SetStartPointRandom(arg1:Array<any>):Promise<Array<any>>;

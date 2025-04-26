@@ -1,7 +1,7 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { ref, watch } from 'vue'
-import { SetSPoint, DeleteStartPoint, SaveMaze, GetAllPaths, GetBestPath } from '../../wailsjs/go/main/App'
+import { SetStartPoint, DeleteStartPoint, SaveMaze, GetPaths, GetBestPath } from '../../wailsjs/go/main/App'
 
 const router = useRouter()
 const savedData = JSON.parse(sessionStorage.getItem('gameData') || 'null')
@@ -36,7 +36,7 @@ const showSolution = async() => {
   if (!allPaths.value.length) {
     const startX = maze.value.findIndex(row => row.includes(1))
     const startY = maze.value[startX]?.indexOf(1) 
-    allPaths.value = await GetAllPaths(maze.value, startX, startY)
+    allPaths.value = await GetPaths(maze.value, startX, startY)
     bestPath.value = await GetBestPath(maze.value, startX, startY)
   }
   
@@ -93,7 +93,7 @@ const selectCell = async (row, col) => {
     setTimeout(() => errorMessage.value = '', 3000) 
     return
   }
-  const updatedMaze = await SetSPoint(maze.value, row, col)
+  const updatedMaze = await SetStartPoint(maze.value, row, col)
   maze.value = updatedMaze 
   allPaths.value = []
   selectingStartPoint.value = false
@@ -136,15 +136,8 @@ const saveMaze = async () => {
     <h1>Maze</h1>
     
     <div class="maze-grid">
-      <div 
-        v-for="(row, rowIndex) in maze" 
-        :key="rowIndex" 
-        class="maze-row"
-      >
-        <div 
-          v-for="(cell, colIndex) in row" 
-          :key="colIndex"
-          class="maze-cell"
+      <div v-for="(row, rowIndex) in maze" :key="rowIndex" class="maze-row">
+        <div v-for="(cell, colIndex) in row" :key="colIndex" class="maze-cell"
           :class="{
             'wall': cell === 3,
             'path': cell === 0,
