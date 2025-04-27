@@ -22,6 +22,10 @@ export function DeleteStartPoint(arg1) {
   return window['go']['main']['App']['DeleteStartPoint'](arg1);
 }
 
+export function GetAveragePath(arg1, arg2, arg3) {
+  return window['go']['main']['App']['GetAveragePath'](arg1, arg2, arg3);
+}
+
 export function GetBestPath(arg1, arg2, arg3) {
   return window['go']['main']['App']['GetBestPath'](arg1, arg2, arg3);
 }
@@ -44,6 +48,14 @@ export function GetPathsAux(arg1, arg2, arg3, arg4, arg5, arg6) {
 
 export function GetStartPoint(arg1) {
   return window['go']['main']['App']['GetStartPoint'](arg1);
+}
+
+export function GetWorstPath(arg1, arg2, arg3) {
+  return window['go']['main']['App']['GetWorstPath'](arg1, arg2, arg3);
+}
+
+export function GetWorstPathAux(arg1, arg2, arg3, arg4, arg5, arg6) {
+  return window['go']['main']['App']['GetWorstPathAux'](arg1, arg2, arg3, arg4, arg5, arg6);
 }
 
 export function MazeExist() {
