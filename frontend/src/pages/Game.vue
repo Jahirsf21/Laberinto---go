@@ -1,11 +1,21 @@
 <script setup>
+// Imports
 import { useRouter } from 'vue-router'
-import { ref, watch} from 'vue'
-import { SetStartPoint, DeleteStartPoint, SaveMaze, GetPaths, GetBestPath, GetWorstPath } from '../../wailsjs/go/main/App'
+import { ref, watch } from 'vue'
+import { 
+  SetStartPoint, 
+  DeleteStartPoint, 
+  SaveMaze, 
+  GetPaths, 
+  GetBestPath, 
+  GetWorstPath 
+} from '../../wailsjs/go/main/App'
 
+// Router and session storage
 const router = useRouter()
 const savedData = JSON.parse(sessionStorage.getItem('gameData') || 'null')
 
+// Data
 const maze = ref(savedData?.maze || [])
 const mode = ref(savedData?.mode || false)
 const paths = ref([])
@@ -13,11 +23,11 @@ const bestPath = ref([])
 const worstPath = ref([])
 const selectedPath = ref(0)
 
-//States of the game
+//Game status
 const IsSaved = ref(savedData?.IsSaved || false)
-const hasStartPoint = ref(false) 
+const hasStartPoint = ref(false)
 
-//States for buttons
+//UI Controls
 const selectingStartPoint = ref(false)
 const showingSolution = ref(false)
 const showingBestPath = ref(false)
@@ -25,149 +35,40 @@ const showingWorstPath = ref(false)
 
 //Messages
 const errorMessage = ref('')
-const saveMessage = ref('') 
+const saveMessage = ref('')
 
-const showSolution = async() => {
-  if (selectingStartPoint.value) {
-    selectingStartPoint.value = false
-  }
-  if (!hasStartPoint.value) {
-    errorMessage.value = 'No puedes ver la solución sin un punto de inicio'
-    setTimeout(() => errorMessage.value = '', 3000) 
-    return
-  }
-
-  if (mode) {
-      if (!paths.value.length) {
-      const startX = maze.value.findIndex(row => row.includes(1))
-      const startY = maze.value[startX]?.indexOf(1) 
-      paths.value = await GetPaths(maze.value, startX, startY)
-    }
-  }
-  showingSolution.value = !showingSolution.value
-}
-
-const toggleShowPaths = async () => {
-  if (selectingStartPoint.value) {
-    selectingStartPoint.value = false
-  }
-  
-  if (showingBestPath.value) {
-    showingBestPath.value = false
-  }
-  
-  if (showingWorstPath.value) {
-    showingWorstPath.value = false
-  }
-  
-  if (!hasStartPoint.value) {
-    errorMessage.value = 'No puedes ver los caminos sin un punto de inicio'
-    setTimeout(() => errorMessage.value = '', 3000) 
-    return
-  }
-
-  if (mode.value && !paths.value.length) {
-    const startX = maze.value.findIndex(row => row.includes(1))
-    const startY = maze.value[startX]?.indexOf(1) 
-    paths.value = await GetPaths(maze.value, startX, startY)
-    selectedPath.value = 0
-  }
-  
-  showingSolution.value = !showingSolution.value
-}
-
-const showNextPath = () => {
-  if (selectedPath.value < paths.value.length-1) {
-    selectedPath.value++
-  }
-}
-
-const showPrevPath = () => {
-  if (selectedPath.value >= 0) {
-    selectedPath.value--
-
-  }
-}
-
-const isBestPathCell = (row, col) => {
-  if (!showingBestPath.value) return false;
-  const path = bestPath.value;
-  return path?.some(coord => coord.fila === row && coord.col === col);
-};
-
-const isWorstPathCell = (row, col) => {
-  if (!showingWorstPath.value) return false;
-  const path = worstPath.value;
-  return path?.some(coord => coord.fila === row && coord.col === col);
-};
-
-const showBestPath = async() => {
-  if (showingSolution.value) {
-    showingSolution.value = false
-  }
-  if (showingWorstPath) {
-    showingWorstPath.value = false
-  }
-  if (!hasStartPoint.value) {
-    errorMessage.value = 'No puedes ver la solución sin un punto de inicio'
-    setTimeout(() => errorMessage.value = '', 3000) 
-    return
-  }
-  showingBestPath.value = !showingBestPath.value
-
-}
-
-const showWorstPath = async() => {
-  if (showingSolution.value) {
-    showingSolution.value = false
-  }
-  if (showingBestPath) {
-    showingBestPath.value = false
-  }
-  if (!hasStartPoint.value) {
-    errorMessage.value = 'No puedes ver la solución sin un punto de inicio'
-    setTimeout(() => errorMessage.value = '', 3000) 
-    return
-  }
-  showingWorstPath.value = !showingWorstPath.value
-}
-
-
-const isPathCell = (row, col) => {
-  if (!showingSolution.value) return false
-  const path = paths.value[selectedPath.value]
-  return path?.some(coord => coord.fila === row && coord.col === col)
-}
-
+// Watchers
 watch(maze, (newMaze) => {
   hasStartPoint.value = newMaze.some(row => row.includes(1))
 }, { immediate: true })
 
+// Game navigation functions
 const goHome = () => {
   router.push({ name: 'Home' })
 }
 
+// Start point management
 const enableStartPointSelection = () => {
   selectingStartPoint.value = true
 }
 
 const selectCell = async (row, col) => {
-  if (!selectingStartPoint.value) 
-    return 
+  if (!selectingStartPoint.value) return
   if (maze.value[row][col] !== 0) {
     errorMessage.value = 'Solo puedes seleccionar una celda vacía'
-    setTimeout(() => errorMessage.value = '', 3000) 
+    setTimeout(() => errorMessage.value = '', 3000)
     return
   }
   const updatedMaze = await SetStartPoint(maze.value, row, col)
-  maze.value = updatedMaze 
+  maze.value = updatedMaze
   const startX = maze.value.findIndex(row => row.includes(1))
-  const startY = maze.value[startX]?.indexOf(1) 
+  const startY = maze.value[startX]?.indexOf(1)
   worstPath.value = await GetWorstPath(maze.value, startX, startY)
   bestPath.value = await GetBestPath(maze.value, startX, startY)
-  paths.value = await GetPaths(maze.value,startX,startY)
+  paths.value = await GetPaths(maze.value, startX, startY)
   selectingStartPoint.value = false
 }
+
 const deleteStartPoint = async () => {
   const updatedMaze = await DeleteStartPoint(maze.value)
   showingBestPath.value = false
@@ -176,14 +77,98 @@ const deleteStartPoint = async () => {
   bestPath.value = []
   worstPath.value = []
   paths.value = []
-
-  maze.value = updatedMaze 
+  
+  maze.value = updatedMaze
 }
 
+// Path display functions
+const isPathCell = (row, col) => {
+  if (!showingSolution.value) return false
+  const path = paths.value[selectedPath.value]
+  return path?.some(coord => coord.fila === row && coord.col === col)
+}
+
+const isBestPathCell = (row, col) => {
+  if (!showingBestPath.value) return false
+  const path = bestPath.value
+  return path?.some(coord => coord.fila === row && coord.col === col)
+}
+
+const isWorstPathCell = (row, col) => {
+  if (!showingWorstPath.value) return false
+  const path = worstPath.value
+  return path?.some(coord => coord.fila === row && coord.col === col)
+}
+
+// Path navigation controls
+const showNextPath = () => {
+  if (selectedPath.value < paths.value.length - 1) {
+    selectedPath.value++
+  }
+}
+
+const showPrevPath = () => {
+  if (selectedPath.value >= 0) {
+    selectedPath.value--
+  }
+}
+
+// Solution display functions
+const toggleShowPaths = async () => {
+  if (selectingStartPoint.value) {
+    selectingStartPoint.value = false
+  }
+  showingBestPath.value = false
+  showingWorstPath.value = false
+  
+  if (!hasStartPoint.value) {
+    errorMessage.value = 'No puedes ver los caminos sin un punto de inicio'
+    setTimeout(() => errorMessage.value = '', 3000)
+    return
+  }
+
+  if (mode.value && !paths.value.length) {
+    const startX = maze.value.findIndex(row => row.includes(1))
+    const startY = maze.value[startX]?.indexOf(1)
+    paths.value = await GetPaths(maze.value, startX, startY)
+    selectedPath.value = 0
+  }
+  
+  showingSolution.value = !showingSolution.value
+}
+
+const showBestPath = async () => {
+  showingSolution.value = false
+  showingWorstPath.value = false
+  
+  if (!hasStartPoint.value) {
+    errorMessage.value = 'No puedes ver la solución sin un punto de inicio'
+    setTimeout(() => errorMessage.value = '', 3000)
+    return
+  }
+  
+  showingBestPath.value = !showingBestPath.value
+}
+
+const showWorstPath = async () => {
+  showingSolution.value = false
+  showingBestPath.value = false
+  
+  if (!hasStartPoint.value) {
+    errorMessage.value = 'No puedes ver la solución sin un punto de inicio'
+    setTimeout(() => errorMessage.value = '', 3000)
+    return
+  }
+  
+  showingWorstPath.value = !showingWorstPath.value
+}
+
+// Game saving
 const saveMaze = async () => {
   if (selectingStartPoint.value) {
     selectingStartPoint.value = false
   }
+  
   const mazeName = prompt("Ingrese el nombre para el laberinto:")
   if (!mazeName) {
     saveMessage.value = 'Debe ingresar un nombre para el laberinto'
