@@ -24,6 +24,8 @@ export function GetPaths(arg1:Array<any>,arg2:number,arg3:number):Promise<Array<
 
 export function GetPathsAux(arg1:Array<any>,arg2:number,arg3:number,arg4:any,arg5:main.Camino,arg6:any):Promise<void>;
 
+export function GetPlayerPosition(arg1:Array<any>):Promise<number|number>;
+
 export function GetStartPoint(arg1:Array<any>):Promise<number|number>;
 
 export function GetWorstPath(arg1:Array<any>,arg2:number,arg3:number):Promise<main.Camino>;
@@ -31,6 +33,14 @@ export function GetWorstPath(arg1:Array<any>,arg2:number,arg3:number):Promise<ma
 export function GetWorstPathAux(arg1:Array<any>,arg2:number,arg3:number,arg4:Array<any>,arg5:main.Camino,arg6:main.Camino):Promise<void>;
 
 export function MazeExist():Promise<boolean>;
+
+export function MoveDown(arg1:Array<any>):Promise<Array<any>>;
+
+export function MoveLeft(arg1:Array<any>):Promise<Array<any>>;
+
+export function MoveRight(arg1:Array<any>):Promise<Array<any>>;
+
+export function MoveUp(arg1:Array<any>):Promise<Array<any>>;
 
 export function SaveMaze(arg1:Array<any>,arg2:string,arg3:boolean):Promise<void>;
 

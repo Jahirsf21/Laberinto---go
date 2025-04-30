@@ -339,7 +339,7 @@ h1 {
 
 
 .wall {
-  background-image: url('Imagenes/pared.png');
+  background-image: url('@/assets/pared.png');
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
@@ -357,7 +357,7 @@ h1 {
 }
 
 .end {
-  background-image: url('Imagenes/meta.png');
+  background-image: url('@/assets/meta.png');
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
