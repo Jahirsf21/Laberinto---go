@@ -7,13 +7,13 @@ const router = useRouter()
 const noSavedGamesMessage = ref('')
 
 const startNewGame = () => {
-  router.push({ name: 'SelectGameMode' })
+  router.push({ name: 'SecondPage' })
 }
 
 const loadGame = async () => {
   const existSavedGames = await MazeExist();
   if (existSavedGames) {
-    router.push('SelectGamesSaved');
+    router.push('ThirdPage');
   } else {
       noSavedGamesMessage.value = 'No hay partidas guardadas';
       setTimeout(() => noSavedGamesMessage.value = '', 3000);
