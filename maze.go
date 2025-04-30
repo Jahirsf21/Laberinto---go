@@ -2,16 +2,18 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"math/rand"
 	"os"
 	"slices"
 )
 
 const (
-	Path  = 0
-	Wall  = 3
-	Start = 1
-	End   = 2
+	Path   = 0
+	Wall   = 3
+	Start  = 1
+	End    = 2
+	player = 4
 )
 
 //Functions about the maze generation
@@ -73,7 +75,7 @@ func (a *App) SetStartEndPoint(maze [][]int, size int, mode bool) {
 		for {
 			startRow, startCol = rand.Intn(size), rand.Intn(size)
 			if maze[startRow][startCol] == Path {
-				maze[startRow][startCol] = Start
+				maze[startRow][startCol] = player
 				break
 			}
 		}
@@ -328,4 +330,60 @@ func (a *App) CreateBooleanMatrix(size int) [][]bool {
 		matrix = append(matrix, row)
 	}
 	return matrix
+}
+
+func (a *App) GetPlayerPosition(maze [][]int) (int, int) {
+	for i := range maze {
+		for j := range maze[i] {
+			if maze[i][j] == player {
+				return i, j
+			}
+		}
+	}
+	return -1, -1
+}
+
+func (a *App) MoveUp(maze [][]int) [][]int {
+	row, col := a.GetPlayerPosition(maze)
+
+	if row-1 < len(maze[0]) && maze[row-1][col] != Wall {
+		maze[row][col] = Path
+		maze[row-1][col] = player
+	}
+
+	return maze
+}
+
+func (a *App) MoveDown(maze [][]int) [][]int {
+	row, col := a.GetPlayerPosition(maze)
+
+	if row+1 < len(maze[0]) && maze[row+1][col] != Wall {
+		maze[row][col] = Path
+		maze[row+1][col] = player
+	}
+
+	return maze
+}
+
+func (a *App) MoveRight(maze [][]int) [][]int {
+	row, col := a.GetPlayerPosition(maze)
+
+	if col+1 < len(maze[0]) && maze[row][col+1] != Wall {
+		maze[row][col] = Path
+		maze[row][col+1] = player
+		fmt.Println("Holaa")
+	}
+
+	return maze
+}
+
+func (a *App) MoveLeft(maze [][]int) [][]int {
+	row, col := a.GetPlayerPosition(maze)
+
+	if col-1 < len(maze[0]) && maze[row][col-1] != Wall {
+		maze[row][col] = Path
+		maze[row][col-1] = player
+	}
+
+	return maze
 }
