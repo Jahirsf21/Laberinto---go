@@ -1,15 +1,23 @@
 <script setup>
 // Imports
 import { useRouter } from 'vue-router'
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { 
   SetStartPoint, 
   DeleteStartPoint, 
   SaveMaze, 
   GetPaths, 
   GetBestPath, 
-  GetWorstPath 
+  GetWorstPath, 
+  MoveUp,
+  MoveDown,
+  MoveRight,
+  MoveLeft
 } from '../../wailsjs/go/main/App'
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeyDown);
+});
 
 // Router and session storage
 const router = useRouter()
@@ -22,6 +30,7 @@ const paths = ref([])
 const bestPath = ref([])
 const worstPath = ref([])
 const selectedPath = ref(0)
+
 
 //Game status
 const IsSaved = ref(savedData?.IsSaved || false)
@@ -67,6 +76,30 @@ const selectCell = async (row, col) => {
   bestPath.value = await GetBestPath(maze.value, startX, startY)
   paths.value = await GetPaths(maze.value, startX, startY)
   selectingStartPoint.value = false
+}
+
+const handleKeyDown = async (event) => {
+  let updatedMaze
+  switch (event.key) {
+    case 'w':
+      updatedMaze = await MoveUp(maze.value)
+      maze.value = updatedMaze
+      break
+    case 's':
+      updatedMaze = await MoveDown(maze.value)
+      maze.value = updatedMaze
+      break
+    case 'd':
+      updatedMaze = await MoveRight(maze.value)
+      maze.value = updatedMaze
+      break
+    case 'a':
+      updatedMaze = await MoveLeft(maze.value)
+      maze.value = updatedMaze
+      break
+
+  }
+
 }
 
 const deleteStartPoint = async () => {
@@ -201,6 +234,7 @@ const saveMaze = async () => {
             'path': cell === 0,
             'start': cell === 1,
             'end': cell === 2,
+            'player' : cell === 4,
             'solution-path': showingSolution && isPathCell(rowIndex, colIndex),
             'best-path': showingBestPath && isBestPathCell(rowIndex, colIndex),
             'worst-path': showingWorstPath && isWorstPathCell(rowIndex, colIndex)
@@ -305,7 +339,12 @@ h1 {
 
 
 .wall {
-  background-color: #2c3e50;
+  background-image: url('Imagenes/pared.png');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: transparent;
+  font-size: 0; 
 }
 
 .path {
@@ -318,7 +357,16 @@ h1 {
 }
 
 .end {
-  background-color: #ff6b6b;
+  background-image: url('Imagenes/meta.png');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: transparent;
+  font-size: 0;
+}
+
+.player {
+  background-color: #f6fd32;
   color: white;
 }
 
