@@ -366,8 +366,12 @@ h1 {
 }
 
 .player {
-  background-color: #f6fd32;
-  color: white;
+  background-image: url('@/assets/character.png');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: transparent;
+  font-size: 5;
 }
 
 .solution-path {
