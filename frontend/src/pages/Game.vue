@@ -27,6 +27,7 @@ const paths = ref([])
 const pathToSolution = ref([])
 const bestPath = ref([])
 const worstPath = ref([])
+const pathPlayer = ref([])
 const selectedPath = ref(0)
 const visitedCells = ref([])
 
@@ -36,6 +37,7 @@ onMounted(() => {
     const startX = maze.value.findIndex(row => row.includes(1))
     const startY = maze.value[startX]?.indexOf(1)
     playerPosition.value = { row: startX, col: startY }
+    pathPlayer.value = [{ row: startX, col: startY }]
     loadPaths()
   }
   window.addEventListener('keydown', handleKeyDown)
@@ -121,10 +123,12 @@ const movePlayer = (direction) => {
     
     if (newRow !== oldPosition.row || newCol !== oldPosition.col) {
       contMoves.value++
+      // Agregar nueva posición al pathPlayer
+      pathPlayer.value.push({ row: newRow, col: newCol })
     }
     if (maze.value[newRow][newCol] === 2) {
-        goResult()
-      }
+      goResult()
+    }
   }
 }
 
@@ -301,13 +305,17 @@ const goHome = () => {
 
 const goResult = () => {
   sessionStorage.setItem('Result', JSON.stringify({
+    maze: maze.value,
     contMoves: contMoves.value,
+    bestPath: bestPath.value,
+    worstPath: worstPath.value,
+    paths: paths.value,
     contBestMove: contBestMove.value,
     contWorstMove: contWorstMove.value,
-    isSaved: isSaved.value
+    isSaved: isSaved.value,
+    pathPlayer: pathPlayer.value 
   }))
   router.push({name: 'Result'})
-
 }
 
 </script>
