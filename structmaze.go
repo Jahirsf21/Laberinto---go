@@ -9,6 +9,12 @@ type Maze struct {
 	BestPath Camino  `json:"bestPath"`
 }
 
+
+type BFS struct {
+	path  Camino
+	steps int
+}
+
 type Coord struct {
 	Fila int `json:"fila"`
 	Col  int `json:"col"`

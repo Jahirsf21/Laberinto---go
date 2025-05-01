@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"math/rand"
 	"os"
 	"slices"
@@ -13,7 +12,6 @@ const (
 	Wall   = 3
 	Start  = 1
 	End    = 2
-	player = 4
 )
 
 //Functions about the maze generation
@@ -53,7 +51,7 @@ func (a *App) CarveMaze(maze [][]int, row, col int) {
 
 		if newRow >= 0 && newCol >= 0 && newRow < len(maze) && newCol < len(maze[0]) {
 			if maze[newRow][newCol] == Path && maze[midRow][midCol] == Wall {
-				if rand.Float64() < 0.1 {
+				if rand.Float64() < 0.05 {
 					maze[midRow][midCol] = Path
 				}
 			}
@@ -75,7 +73,7 @@ func (a *App) SetStartEndPoint(maze [][]int, size int, mode bool) {
 		for {
 			startRow, startCol = rand.Intn(size), rand.Intn(size)
 			if maze[startRow][startCol] == Path {
-				maze[startRow][startCol] = player
+				maze[startRow][startCol] = Start
 				break
 			}
 		}
@@ -247,28 +245,56 @@ func (a *App) GetPathsAux(maze [][]int, row, col int, visited *[][]bool, current
 	*currentPath = (*currentPath)[:len(*currentPath)-1]
 }
 
-func (a *App) GetBestPath(maze [][]int, row, col int) Camino {
-	queue := []Camino{{Coord{Fila: row, Col: col}}}
+func (a *App) GetPath(maze [][]int, startRow, startCol int) Camino {
+	queue := []BFS{{path: Camino{{Fila: startRow, Col: startCol}}, steps: 0}}
 	visited := a.CreateBooleanMatrix(len(maze))
-	visited[row][col] = true
+	visited[startRow][startCol] = true
+	dirs := [][]int{{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
+	var path Camino
+	for len(queue) > 0 {
+			current := queue[0]
+			queue = queue[1:]
+			lastPos := current.path[len(current.path)-1]
+			path = append(path, lastPos)
+			if maze[lastPos.Fila][lastPos.Col] == End {
+					return path
+			}
+			for _, dir := range dirs {
+					newRow, newCol := lastPos.Fila+dir[0], lastPos.Col+dir[1]
+					if newRow >= 0 && newCol >= 0 && newRow < len(maze) && newCol < len(maze[0]) && 
+						 maze[newRow][newCol] != Wall && !visited[newRow][newCol] {
+							visited[newRow][newCol] = true
+							newPath := slices.Clone(current.path)
+							newPath = append(newPath, Coord{Fila: newRow, Col: newCol})
+							queue = append(queue, BFS{path: newPath, steps: current.steps + 1})
+					}
+			}
+	}
+	return path
+}
+
+func (a *App) GetBestPath(maze [][]int, startRow, startCol int) Camino {
+	queue := []BFS{{path: Camino{{Fila: startRow, Col: startCol}}, steps: 0}}
+	visited := a.CreateBooleanMatrix(len(maze))
+	visited[startRow][startCol] = true
 	dirs := [][]int{{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
 	for len(queue) > 0 {
-		currentPath := queue[0]
-		queue = queue[1:]
-		lastPos := currentPath[len(currentPath)-1]
-		row, col := lastPos.Fila, lastPos.Col
-		if maze[row][col] == End {
-			return currentPath
-		}
-		for _, dir := range dirs {
-			newRow, newCol := row+dir[0], col+dir[1]
-			if newRow >= 0 && newCol >= 0 && newRow < len(maze) && newCol < len(maze[0]) && maze[newRow][newCol] != Wall && !visited[newRow][newCol] {
-				visited[newRow][newCol] = true
-				newPath := slices.Clone(currentPath)
-				newPath = append(newPath, Coord{Fila: newRow, Col: newCol})
-				queue = append(queue, newPath)
+			current := queue[0]
+			queue = queue[1:]
+			lastPos := current.path[len(current.path)-1]
+			if maze[lastPos.Fila][lastPos.Col] == End {
+					return current.path
 			}
-		}
+			for _, dir := range dirs {
+					newRow, newCol := lastPos.Fila+dir[0], lastPos.Col+dir[1]
+					if newRow >= 0 && newCol >= 0 && newRow < len(maze) && newCol < len(maze[0]) && 
+						 maze[newRow][newCol] != Wall && !visited[newRow][newCol] {
+							visited[newRow][newCol] = true
+							newPath := slices.Clone(current.path)
+							newPath = append(newPath, Coord{Fila: newRow, Col: newCol})
+							queue = append(queue, BFS{path: newPath, steps: current.steps + 1})
+					}
+			}
 	}
 	return Camino{}
 }
@@ -287,7 +313,6 @@ func (a *App) GetWorstPathAux(maze [][]int, row, col int, visited [][]bool, curr
 	}
 	*currentPath = append(*currentPath, Coord{Fila: row, Col: col})
 	visited[row][col] = true
-
 	if maze[row][col] == End {
 		if len(*currentPath) > len(*worstPath) {
 			*worstPath = (*worstPath)[:0]
@@ -304,22 +329,6 @@ func (a *App) GetWorstPathAux(maze [][]int, row, col int, visited [][]bool, curr
 	visited[row][col] = false
 }
 
-func (a *App) GetAveragePath(maze [][]int, row, col int) Camino {
-	paths := a.GetPaths(maze, row, col)
-	if len(paths) == 0 {
-		return Camino{}
-	}
-	for i := 1; i < len(paths); i++ {
-		j := i
-		for j > 0 && len(paths[j-1]) > len(paths[j]) {
-			paths[j-1], paths[j] = paths[j], paths[j-1]
-			j--
-		}
-	}
-	result := len(paths) / 2
-	return paths[result]
-}
-
 func (a *App) CreateBooleanMatrix(size int) [][]bool {
 	var matrix [][]bool
 	for range size {
@@ -332,58 +341,8 @@ func (a *App) CreateBooleanMatrix(size int) [][]bool {
 	return matrix
 }
 
-func (a *App) GetPlayerPosition(maze [][]int) (int, int) {
-	for i := range maze {
-		for j := range maze[i] {
-			if maze[i][j] == player {
-				return i, j
-			}
-		}
-	}
-	return -1, -1
-}
 
-func (a *App) MoveUp(maze [][]int) [][]int {
-	row, col := a.GetPlayerPosition(maze)
 
-	if row-1 < len(maze[0]) && maze[row-1][col] != Wall {
-		maze[row][col] = Path
-		maze[row-1][col] = player
-	}
 
-	return maze
-}
 
-func (a *App) MoveDown(maze [][]int) [][]int {
-	row, col := a.GetPlayerPosition(maze)
 
-	if row+1 < len(maze[0]) && maze[row+1][col] != Wall {
-		maze[row][col] = Path
-		maze[row+1][col] = player
-	}
-
-	return maze
-}
-
-func (a *App) MoveRight(maze [][]int) [][]int {
-	row, col := a.GetPlayerPosition(maze)
-
-	if col+1 < len(maze[0]) && maze[row][col+1] != Wall {
-		maze[row][col] = Path
-		maze[row][col+1] = player
-		fmt.Println("Holaa")
-	}
-
-	return maze
-}
-
-func (a *App) MoveLeft(maze [][]int) [][]int {
-	row, col := a.GetPlayerPosition(maze)
-
-	if col-1 < len(maze[0]) && maze[row][col-1] != Wall {
-		maze[row][col] = Path
-		maze[row][col-1] = player
-	}
-
-	return maze
-}

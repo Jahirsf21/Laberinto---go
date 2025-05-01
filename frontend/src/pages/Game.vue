@@ -1,62 +1,64 @@
 <script setup>
-// Imports
 import { useRouter } from 'vue-router'
-import { ref, watch, onMounted, onUnmounted } from 'vue'
-import { 
-  SetStartPoint, 
-  DeleteStartPoint, 
-  SaveMaze, 
-  GetPaths, 
-  GetBestPath, 
-  GetWorstPath, 
-  MoveUp,
-  MoveDown,
-  MoveRight,
-  MoveLeft
-} from '../../wailsjs/go/main/App'
+import { ref, watch, onMounted } from 'vue'
+import {SetStartPoint, DeleteStartPoint, SaveMaze, GetPaths, GetPath, GetBestPath, GetWorstPath} from '../../wailsjs/go/main/App'
 
-onMounted(() => {
-  window.addEventListener('keydown', handleKeyDown);
-});
-
-// Router and session storage
 const router = useRouter()
 const savedData = JSON.parse(sessionStorage.getItem('gameData') || 'null')
 
-// Data
 const maze = ref(savedData?.maze || [])
 const mode = ref(savedData?.mode || false)
+const playerPosition = ref({ row: -1, col: -1 })
+const canMove = ref(true)
+const contMoves = ref(0)
+const contBestMove = ref(0)
+const contWorstMove = ref(0)
+const isSaved = ref(savedData?.isSaved || false)
+const hasStartPoint = ref(false)
+const selectingStartPoint = ref(false)
+const showingSolution = ref(false)
+const showingSolutionAnimated = ref(false)
+const wasShow = ref(false)
+const showingBestPath = ref(false)
+const showingWorstPath = ref(false)
+const errorMessage = ref('')
+const saveMessage = ref('')
 const paths = ref([])
+const pathToSolution = ref([])
 const bestPath = ref([])
 const worstPath = ref([])
 const selectedPath = ref(0)
+const visitedCells = ref([])
 
 
-//Game status
-const IsSaved = ref(savedData?.IsSaved || false)
-const hasStartPoint = ref(false)
+onMounted(() => {
+  if (!mode.value) {
+    const startX = maze.value.findIndex(row => row.includes(1))
+    const startY = maze.value[startX]?.indexOf(1)
+    playerPosition.value = { row: startX, col: startY }
+    loadPaths()
+  }
+  window.addEventListener('keydown', handleKeyDown)
+})
 
-//UI Controls
-const selectingStartPoint = ref(false)
-const showingSolution = ref(false)
-const showingBestPath = ref(false)
-const showingWorstPath = ref(false)
 
-//Messages
-const errorMessage = ref('')
-const saveMessage = ref('')
-
-// Watchers
 watch(maze, (newMaze) => {
   hasStartPoint.value = newMaze.some(row => row.includes(1))
 }, { immediate: true })
 
-// Game navigation functions
-const goHome = () => {
-  router.push({ name: 'Home' })
+
+const loadPaths = async () => {
+  const startX = maze.value.findIndex(row => row.includes(1))
+  const startY = maze.value[startX]?.indexOf(1)
+  worstPath.value = await GetWorstPath(maze.value, startX, startY)
+  bestPath.value = await GetBestPath(maze.value, startX, startY)
+  paths.value = await GetPaths(maze.value, startX, startY)
+  pathToSolution.value = await GetPath(maze.value, startX, startY)
+  contBestMove.value = bestPath.value.length-1
+  contWorstMove.value = worstPath.value.length-1
 }
 
-// Start point management
+
 const enableStartPointSelection = () => {
   selectingStartPoint.value = true
 }
@@ -68,53 +70,65 @@ const selectCell = async (row, col) => {
     setTimeout(() => errorMessage.value = '', 3000)
     return
   }
-  const updatedMaze = await SetStartPoint(maze.value, row, col)
-  maze.value = updatedMaze
-  const startX = maze.value.findIndex(row => row.includes(1))
-  const startY = maze.value[startX]?.indexOf(1)
-  worstPath.value = await GetWorstPath(maze.value, startX, startY)
-  bestPath.value = await GetBestPath(maze.value, startX, startY)
-  paths.value = await GetPaths(maze.value, startX, startY)
+  maze.value = await SetStartPoint(maze.value, row, col)
+  await loadPaths()
   selectingStartPoint.value = false
 }
 
-const handleKeyDown = async (event) => {
-  let updatedMaze
-  switch (event.key) {
-    case 'w':
-      updatedMaze = await MoveUp(maze.value)
-      maze.value = updatedMaze
-      break
-    case 's':
-      updatedMaze = await MoveDown(maze.value)
-      maze.value = updatedMaze
-      break
-    case 'd':
-      updatedMaze = await MoveRight(maze.value)
-      maze.value = updatedMaze
-      break
-    case 'a':
-      updatedMaze = await MoveLeft(maze.value)
-      maze.value = updatedMaze
-      break
-
-  }
-
-}
-
 const deleteStartPoint = async () => {
-  const updatedMaze = await DeleteStartPoint(maze.value)
+  maze.value = await DeleteStartPoint(maze.value)
   showingBestPath.value = false
   showingWorstPath.value = false
   showingSolution.value = false
   bestPath.value = []
   worstPath.value = []
   paths.value = []
-  
-  maze.value = updatedMaze
 }
 
-// Path display functions
+
+const handleKeyDown = async (event) => {
+  if (!mode.value && canMove.value === true) {
+    switch (event.key) {
+      case 'w': movePlayer('up'); break
+      case 's': movePlayer('down'); break
+      case 'a': movePlayer('left'); break
+      case 'd': movePlayer('right'); break
+    }
+  }
+}
+
+const movePlayer = (direction) => {
+  let { row, col } = playerPosition.value
+  let newRow = row
+  let newCol = col
+
+  switch (direction) {
+    case 'up': newRow = row - 1; break
+    case 'down': newRow = row + 1; break
+    case 'left': newCol = col - 1; break
+    case 'right': newCol = col + 1; break
+  }
+
+  if (
+    newRow >= 0 &&
+    newRow < maze.value.length &&
+    newCol >= 0 &&
+    newCol < maze.value[0].length &&
+    maze.value[newRow][newCol] !== 3
+  ) {
+    const oldPosition = { row, col }
+    playerPosition.value = { row: newRow, col: newCol }
+    
+    if (newRow !== oldPosition.row || newCol !== oldPosition.col) {
+      contMoves.value++
+    }
+    if (maze.value[newRow][newCol] === 2) {
+        goResult()
+      }
+  }
+}
+
+
 const isPathCell = (row, col) => {
   if (!showingSolution.value) return false
   const path = paths.value[selectedPath.value]
@@ -123,85 +137,145 @@ const isPathCell = (row, col) => {
 
 const isBestPathCell = (row, col) => {
   if (!showingBestPath.value) return false
-  const path = bestPath.value
-  return path?.some(coord => coord.fila === row && coord.col === col)
+  return bestPath.value?.some(coord => coord.fila === row && coord.col === col)
 }
 
 const isWorstPathCell = (row, col) => {
   if (!showingWorstPath.value) return false
-  const path = worstPath.value
-  return path?.some(coord => coord.fila === row && coord.col === col)
+  return worstPath.value?.some(coord => coord.fila === row && coord.col === col)
 }
 
-// Path navigation controls
+
 const showNextPath = () => {
-  if (selectedPath.value < paths.value.length - 1) {
-    selectedPath.value++
-  }
+  if (selectedPath.value < paths.value.length - 1) selectedPath.value++
 }
-
 const showPrevPath = () => {
-  if (selectedPath.value >= 0) {
-    selectedPath.value--
-  }
+  if (selectedPath.value > 0) selectedPath.value--
 }
 
-// Solution display functions
+
 const toggleShowPaths = async () => {
-  if (selectingStartPoint.value) {
-    selectingStartPoint.value = false
+  if (mode.value=== false) {
+    clearAnimation()
   }
+  if (selectingStartPoint.value) selectingStartPoint.value = false
   showingBestPath.value = false
   showingWorstPath.value = false
-  
+
   if (!hasStartPoint.value) {
     errorMessage.value = 'No puedes ver los caminos sin un punto de inicio'
     setTimeout(() => errorMessage.value = '', 3000)
     return
   }
-
-  if (mode.value && !paths.value.length) {
-    const startX = maze.value.findIndex(row => row.includes(1))
-    const startY = maze.value[startX]?.indexOf(1)
-    paths.value = await GetPaths(maze.value, startX, startY)
-    selectedPath.value = 0
-  }
-  
+  if (mode.value && !paths.value.length) await loadPaths()
   showingSolution.value = !showingSolution.value
 }
 
-const showBestPath = async () => {
+const showPathAnimated = () => {
+  canMove.value = false
+  showingSolution.value = false
+  showingBestPath.value = false
+  showingSolutionAnimated.value = true
+  wasShow.value = true
+  animateSolution()
+}
+
+let animationInterval = null
+let currentStep = 0
+
+const animateSolution = () => {
+  if (animationInterval) {
+    clearInterval(animationInterval);
+    currentStep = 0;
+  }
+
+  if (!pathToSolution.value || pathToSolution.value.length === 0) {
+    errorMessage.value = 'No hay camino para mostrar';
+    setTimeout(() => (errorMessage.value = ''), 3000);
+    return;
+  }
+
+  currentStep = 0;
+  playerPosition.value = {
+    row: pathToSolution.value[0].fila,
+    col: pathToSolution.value[0].col,
+  }
+
+  visitedCells.value.push({
+    row: pathToSolution.value[0].fila,
+    col: pathToSolution.value[0].col,
+  })
+
+  animationInterval = setInterval(() => {
+    currentStep++
+    if (currentStep < pathToSolution.value.length) {
+      const { fila, col } = pathToSolution.value[currentStep]
+      playerPosition.value = { row: fila, col: col }
+      if (!visitedCells.value.some(cell => cell.row === fila && cell.col === col)) {
+        visitedCells.value.push({ row: fila, col: col })
+      }
+    } else {
+      clearInterval(animationInterval);
+      animationInterval = null
+      visitedCells.value = []
+      showBestPath()
+      wasShow.value = true
+    }
+  }, 300) 
+}
+
+const clearAnimation = () => {
+  if (animationInterval) {
+    clearInterval(animationInterval)
+    animationInterval = null
+  }
+  showingSolutionAnimated.value = false
+  visitedCells.value = []
+  canMove.value = true
+  const endRow = maze.value.findIndex(row => row.includes(2))
+  if (endRow !== -1) {
+    const endCol = maze.value[endRow].indexOf(2)
+    playerPosition.value = { row: endRow, col: endCol }
+  }
+}
+
+const showBestPath = () => {
   showingSolution.value = false
   showingWorstPath.value = false
-  
+  if (mode.value=== false) {
+    clearAnimation()
+  }
+
+
   if (!hasStartPoint.value) {
     errorMessage.value = 'No puedes ver la solución sin un punto de inicio'
     setTimeout(() => errorMessage.value = '', 3000)
     return
   }
-  
+
   showingBestPath.value = !showingBestPath.value
 }
 
-const showWorstPath = async () => {
+const showWorstPath = () => {
   showingSolution.value = false
   showingBestPath.value = false
-  
+  if (mode.value=== false) {
+    clearAnimation()
+  }
+
+
   if (!hasStartPoint.value) {
     errorMessage.value = 'No puedes ver la solución sin un punto de inicio'
     setTimeout(() => errorMessage.value = '', 3000)
     return
   }
-  
+
   showingWorstPath.value = !showingWorstPath.value
 }
 
-// Game saving
 const saveMaze = async () => {
-  if (selectingStartPoint.value) {
-    selectingStartPoint.value = false
-  }
-  
+  if (selectingStartPoint.value) selectingStartPoint.value = false
+
   const mazeName = prompt("Ingrese el nombre para el laberinto:")
   if (!mazeName) {
     saveMessage.value = 'Debe ingresar un nombre para el laberinto'
@@ -212,41 +286,60 @@ const saveMaze = async () => {
   try {
     await SaveMaze(maze.value, mazeName, mode.value)
     saveMessage.value = 'Laberinto guardado correctamente'
-    IsSaved.value = true
-    setTimeout(() => saveMessage.value = '', 3000)
+    isSaved.value = true
   } catch (error) {
     saveMessage.value = 'Error al guardar el laberinto'
-    setTimeout(() => saveMessage.value = '', 3000)
     console.error(error)
+  } finally {
+    setTimeout(() => saveMessage.value = '', 3000)
   }
 }
+
+const goHome = () => {
+  router.push({ name: 'Home' })
+}
+
+const goResult = () => {
+  sessionStorage.setItem('Result', JSON.stringify({
+    contMoves: contMoves.value,
+    contBestMove: contBestMove.value,
+    contWorstMove: contWorstMove.value,
+    isSaved: isSaved.value
+  }))
+  router.push({name: 'Result'})
+
+}
+
 </script>
+
 
 <template>
   <div class="game-container">
     <h1>Maze</h1>
-    
     <div class="maze-grid">
       <div v-for="(row, rowIndex) in maze" :key="rowIndex" class="maze-row">
-        <div v-for="(cell, colIndex) in row" :key="colIndex" class="maze-cell"
+        <div
+          v-for="(cell, colIndex) in row"
+          :key="colIndex"
+          class="maze-cell"
           :class="{
             'wall': cell === 3,
             'path': cell === 0,
             'start': cell === 1,
             'end': cell === 2,
-            'player' : cell === 4,
             'solution-path': showingSolution && isPathCell(rowIndex, colIndex),
             'best-path': showingBestPath && isBestPathCell(rowIndex, colIndex),
-            'worst-path': showingWorstPath && isWorstPathCell(rowIndex, colIndex)
+            'worst-path': showingWorstPath && isWorstPathCell(rowIndex, colIndex),
+            'visited': visitedCells.some(c => c.row === rowIndex && c.col === colIndex) 
           }"
           @click="selectCell(rowIndex, colIndex)" 
         >
           <span v-if="cell === 1">I</span>
           <span v-else-if="cell === 2">F</span>
+          <div v-if="playerPosition.row === rowIndex && playerPosition.col === colIndex" class="player"></div>
         </div>
       </div>
     </div>
-
     <div v-if="showingSolution && paths.length" class="path-navigation">
       <button @click="showPrevPath" :disabled="selectedPath === 0" class="nav-button">
         ← Anterior
@@ -258,10 +351,7 @@ const saveMaze = async () => {
         Siguiente →
       </button>
     </div>
-
-    <!-- NUEVA ORGANIZACIÓN DE BOTONES -->
     <div class="controls-group">
-      <!-- Primer grupo -->
       <div class="controls">
         <button v-if="mode && !hasStartPoint" @click="enableStartPointSelection" class="start-button">
           Establecer punto de inicio
@@ -269,7 +359,9 @@ const saveMaze = async () => {
         <button v-if="mode && hasStartPoint" @click="deleteStartPoint" class="delete-button">
           Borrar punto de inicio
         </button>
-
+        <button v-if="!mode && wasShow === false" @click="showPathAnimated" class="path-animation-button"> 
+          {{ showingSolutionAnimated ?"Ocultar" :"Mostrar solución animado" }}
+        </button> 
         <button @click="showBestPath" class="best-path-button">
           {{ showingBestPath ? "Ocultar" : "Mostrar solución" }}
         </button>
@@ -281,10 +373,8 @@ const saveMaze = async () => {
           {{ showingSolution ? 'Ocultar caminos' : 'Mostrar caminos' }}
         </button>
       </div>
-
-      <!-- Segundo grupo -->
       <div class="controls">
-        <button v-if="!IsSaved" @click="saveMaze" class="save-button">
+        <button v-if="!isSaved" @click="saveMaze" class="save-button">
           Guardar Laberinto
         </button>
         <button @click="goHome" class="back-button">
@@ -292,9 +382,7 @@ const saveMaze = async () => {
         </button>
       </div>
     </div>
-
   </div>
-
   <div v-if="errorMessage" class="message error-message">
     {{ errorMessage }}
   </div>
@@ -370,8 +458,13 @@ h1 {
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
-  color: transparent;
-  font-size: 5;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}
+
+.visited {
+  background-color: rgba(255, 136, 0, 0.866); 
 }
 
 .solution-path {
@@ -466,6 +559,12 @@ button {
   color: white;
 }
 
+.path-animation-button {
+  padding: 0.6rem 1rem;
+  background-color: #3498db;
+  color: white;
+}
+
 .worst-path-button {
   padding: 0.6rem 1rem;
   background-color: #3498db;
@@ -511,34 +610,42 @@ button:hover,
 
 
 @media (max-width: 768px) {
-  .controls, 
-  .path-navigation {
-    flex-direction: column;
-    align-items: center;
-  }
+.controls, 
+.path-navigation {
+  flex-direction: column;
+  align-items: center;
+}
+
+button,
+.nav-button,
+.best-path-button {
+  width: 100%;
+  max-width: 250px;
+  margin-bottom: 0.5rem;
+}
+
+.maze-cell {
+  width: 25px;
+  height: 25px;
+  font-size: 0.8rem;
+}
   
-  button,
-  .nav-button,
-  .best-path-button {
-    width: 100%;
-    max-width: 250px;
-    margin-bottom: 0.5rem;
-  }
-  
-  .maze-cell {
-    width: 25px;
-    height: 25px;
-    font-size: 0.8rem;
-  }
-  
-  .path-navigation {
-    gap: 0.5rem;
-  }
-  
-  .path-counter {
-    order: -1;
-    width: 100%;
-    margin-bottom: 0.5rem;
-  }
+.path-navigation {
+  gap: 0.5rem;
+}
+
+.path-counter {
+  order: -1;
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+
+
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 }
 </style>

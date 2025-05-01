@@ -18,10 +18,6 @@ const selectMaze = (maze) => {
   selectedMaze.value = maze
 }
 
-const toggleMode = () => {
-  mode.value = !mode.value
-}
-
 const startGame = async () => {
   let updatedMaze = selectedMaze.value.matrix
   if (selectedMaze.value.mode === true) {
@@ -39,7 +35,7 @@ const startGame = async () => {
   sessionStorage.setItem('gameData', JSON.stringify({
     maze: updatedMaze,
     mode: mode.value,
-    IsSaved: true,
+    isSaved: true,
   }))
 
   router.push({ name: 'Game' })

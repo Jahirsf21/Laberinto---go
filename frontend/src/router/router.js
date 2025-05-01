@@ -3,6 +3,7 @@ import PrincipalPage from '../pages/PrincipalPage.vue'
 import SecondPage from '../pages/SecondPage.vue'
 import ThirdPage from '../pages/ThirdPage.vue'
 import Game from '../pages/Game.vue'
+import Result from '../pages/Result.vue'
 
 const routes = [
   {
@@ -21,9 +22,14 @@ const routes = [
     component: ThirdPage
   },
   {
-    path: '/game',
+    path: '/Game',
     name: 'Game',
     component: Game
+  },
+  {
+    path: '/Result',
+    name: 'Result',
+    component: Result
   }
 ]
 

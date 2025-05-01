@@ -22,10 +22,6 @@ export function DeleteStartPoint(arg1) {
   return window['go']['main']['App']['DeleteStartPoint'](arg1);
 }
 
-export function GetAveragePath(arg1, arg2, arg3) {
-  return window['go']['main']['App']['GetAveragePath'](arg1, arg2, arg3);
-}
-
 export function GetBestPath(arg1, arg2, arg3) {
   return window['go']['main']['App']['GetBestPath'](arg1, arg2, arg3);
 }
@@ -38,16 +34,16 @@ export function GetMazes() {
   return window['go']['main']['App']['GetMazes']();
 }
 
+export function GetPath(arg1, arg2, arg3) {
+  return window['go']['main']['App']['GetPath'](arg1, arg2, arg3);
+}
+
 export function GetPaths(arg1, arg2, arg3) {
   return window['go']['main']['App']['GetPaths'](arg1, arg2, arg3);
 }
 
 export function GetPathsAux(arg1, arg2, arg3, arg4, arg5, arg6) {
   return window['go']['main']['App']['GetPathsAux'](arg1, arg2, arg3, arg4, arg5, arg6);
-}
-
-export function GetPlayerPosition(arg1) {
-  return window['go']['main']['App']['GetPlayerPosition'](arg1);
 }
 
 export function GetStartPoint(arg1) {
@@ -64,22 +60,6 @@ export function GetWorstPathAux(arg1, arg2, arg3, arg4, arg5, arg6) {
 
 export function MazeExist() {
   return window['go']['main']['App']['MazeExist']();
-}
-
-export function MoveDown(arg1) {
-  return window['go']['main']['App']['MoveDown'](arg1);
-}
-
-export function MoveLeft(arg1) {
-  return window['go']['main']['App']['MoveLeft'](arg1);
-}
-
-export function MoveRight(arg1) {
-  return window['go']['main']['App']['MoveRight'](arg1);
-}
-
-export function MoveUp(arg1) {
-  return window['go']['main']['App']['MoveUp'](arg1);
 }
 
 export function SaveMaze(arg1, arg2, arg3) {
