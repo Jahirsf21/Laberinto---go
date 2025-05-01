@@ -237,8 +237,6 @@ const clearAnimation = () => {
   }
   showingSolutionAnimated.value = false
   visitedCells.value = []
-  canMove.value = true
-
   const endRow = maze.value.findIndex(row => row.includes(2))
   if (endRow !== -1) {
     const endCol = maze.value[endRow].indexOf(2)
@@ -608,44 +606,4 @@ button:hover,
   color: white;
 }
 
-
-@media (max-width: 768px) {
-.controls, 
-.path-navigation {
-  flex-direction: column;
-  align-items: center;
-}
-
-button,
-.nav-button,
-.best-path-button {
-  width: 100%;
-  max-width: 250px;
-  margin-bottom: 0.5rem;
-}
-
-.maze-cell {
-  width: 25px;
-  height: 25px;
-  font-size: 0.8rem;
-}
-  
-.path-navigation {
-  gap: 0.5rem;
-}
-
-.path-counter {
-  order: -1;
-  width: 100%;
-  margin-bottom: 0.5rem;
-}
-
-
-
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-}
 </style>
