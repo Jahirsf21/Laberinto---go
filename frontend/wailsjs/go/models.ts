@@ -19,8 +19,6 @@ export namespace main {
 	    mode: boolean;
 	    matrix: number[][];
 	    end: Coord;
-	    allPaths: Coord[];
-	    bestPath: Coord[];
 	
 	    static createFrom(source: any = {}) {
 	        return new Maze(source);
@@ -32,8 +30,6 @@ export namespace main {
 	        this.mode = source["mode"];
 	        this.matrix = source["matrix"];
 	        this.end = this.convertValues(source["end"], Coord);
-	        this.allPaths = this.convertValues(source["allPaths"], Coord);
-	        this.bestPath = this.convertValues(source["bestPath"], Coord);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
